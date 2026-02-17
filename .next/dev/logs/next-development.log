@@ -1,7 +1,15 @@
-[00:00:00.916] Server  LOG     ✓ Ready in 650ms
-[00:00:02.677] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:12.098] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:13.739] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:16.090] Browser LOG     create raid: 200 {"raid":{"id":"4fd2a0c0-0127-4f0e-bf8c-66d49513052c","code":"484_MB","status":"lobby","boss_name":"Pineapple Pizza Titan","boss_hp":3600,"boss_hp_max":3600,"duration_seconds":60,"started_at":null,"ends_at":null,"created_at":"2026-02-17T20:12:17.75975+00:00"}}
-[00:04:11.191] Server  LOG     ✓ Compiled in 205ms
-[00:05:19.809] Server  LOG     ✓ Compiled in 66ms
+[00:00:00.979] Server  LOG     ✓ Ready in 698ms
+[00:00:01.894] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:25.181] Server  LOG     ✓ Compiled in 135ms
+[00:02:39.713] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:06:48.650] Server  LOG     ✓ Compiled in 357ms
+[00:07:00.374] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:04.576] Browser LOG     create raid: 200 {"raid":{"id":"043818cf-9741-4a32-ab9f-5b6f5f027b61","code":"BRLW5N","status":"lobby","boss_name":"Pineapple Pizza Titan","boss_hp":3600,"boss_hp_max":3600,"duration_seconds":60,"started_at":null,"ends_at":null,"created_at":"2026-02-17T21:35:27.638025+00:00"}}
+[00:08:42.350] Server  LOG     ✓ Compiled in 14ms
+[00:08:48.731] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:56.170] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:10.002] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:11:54.161] Server  LOG     ✓ Compiled in 27ms
+[00:12:04.037] Server  LOG     ✓ Compiled in 20ms
+[00:12:20.196] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:32.556] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold

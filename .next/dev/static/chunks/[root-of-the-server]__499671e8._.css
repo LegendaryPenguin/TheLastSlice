@@ -394,6 +394,76 @@ input {
   font-weight: 900;
 }
 
+.atk-wave:before {
+  content: "";
+  border: 2px solid #22c55ea6;
+  border-radius: 999px;
+  width: 520px;
+  height: 120px;
+  animation: .45s fxWave;
+  position: absolute;
+  box-shadow: 0 0 22px #22c55e73;
+}
+
+.atk-spin:before {
+  content: "";
+  border: 10px solid #a855f759;
+  border-top-color: #a855f7f2;
+  border-radius: 999px;
+  width: 180px;
+  height: 180px;
+  animation: .45s fxSpin;
+  position: absolute;
+  box-shadow: 0 0 18px #a855f759;
+}
+
+.atk-bite:before {
+  content: "";
+  background: radial-gradient(circle at 30%, #ffffffd9, #ffffff1a 60%, #0000 70%);
+  border-radius: 999px;
+  width: 240px;
+  height: 120px;
+  animation: .35s fxBite;
+  position: absolute;
+  box-shadow: 0 0 22px #ffffff59;
+}
+
+@keyframes fxWave {
+  from {
+    opacity: 0;
+    transform: scaleX(.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes fxSpin {
+  from {
+    opacity: 0;
+    transform: rotate(0)scale(.7);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotate(200deg)scale(1);
+  }
+}
+
+@keyframes fxBite {
+  from {
+    opacity: 0;
+    transform: scale(.7)translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1)translateY(0);
+  }
+}
+
 .atk-slash:before {
   content: "";
   filter: drop-shadow(0 0 18px #a855f7b3);

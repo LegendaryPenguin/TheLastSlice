@@ -316,6 +316,53 @@ input {
 
 .critTag{ color:#ff71ff; font-weight: 900; }
 
+.atk-wave::before{
+  content:"";
+  position:absolute;
+  width: 520px; height: 120px;
+  border-radius: 999px;
+  border: 2px solid rgba(34,197,94,0.65);
+  box-shadow: 0 0 22px rgba(34,197,94,0.45);
+  animation: fxWave 0.45s ease;
+}
+
+.atk-spin::before{
+  content:"";
+  position:absolute;
+  width: 180px; height: 180px;
+  border-radius: 999px;
+  border: 10px solid rgba(168,85,247,0.35);
+  border-top-color: rgba(168,85,247,0.95);
+  box-shadow: 0 0 18px rgba(168,85,247,0.35);
+  animation: fxSpin 0.45s ease;
+}
+
+.atk-bite::before{
+  content:"";
+  position:absolute;
+  width: 240px; height: 120px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.85), rgba(255,255,255,0.1) 60%, transparent 70%);
+  box-shadow: 0 0 22px rgba(255,255,255,0.35);
+  animation: fxBite 0.35s ease;
+}
+
+@keyframes fxWave {
+  from { opacity:0; transform: scaleX(0.6); }
+  to   { opacity:1; transform: scaleX(1); }
+}
+
+@keyframes fxSpin {
+  from { opacity:0; transform: rotate(0deg) scale(0.7); }
+  to   { opacity:1; transform: rotate(200deg) scale(1); }
+}
+
+@keyframes fxBite {
+  from { opacity:0; transform: scale(0.7) translateY(10px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+
 .atk-slash::before{
   content:"";
   position:absolute;

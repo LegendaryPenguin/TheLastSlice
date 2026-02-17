@@ -19,8 +19,19 @@ export default function RaidPage() {
   const [player, setPlayer] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
   const [attacks, setAttacks] = useState<any[]>([]);
+  const [isHost, setIsHost] = useState(false);
 
   const [moveSet, setMoveSet] = useState(() => pickFourRandomMoves());
+
+  // ✅ Detect host flag (set when you created the raid on Home)
+  useEffect(() => {
+    if (!code || code === "ENTER") return;
+    try {
+      setIsHost(localStorage.getItem(`raid:${code}:isHost`) === "1");
+    } catch {
+      setIsHost(false);
+    }
+  }, [code]);
 
   // Load saved player for this raid (so refresh doesn't wipe identity)
   useEffect(() => {
@@ -91,7 +102,6 @@ export default function RaidPage() {
         { event: "INSERT", schema: "public", table: "attacks", filter: `raid_id=eq.${raid.id}` },
         (payload) => {
           const atk = payload.new as any;
-          // prepend + cap
           setAttacks((prev) => [atk, ...prev].slice(0, 200));
         }
       )
@@ -147,14 +157,18 @@ export default function RaidPage() {
     setMoveSet(pickFourRandomMoves());
   }
 
-  // Single source of truth for mode switching
+  // ✅ Single source of truth for mode switching (host sees lobby even if not joined)
   useEffect(() => {
     if (!raid) return;
 
-    if (raid.status === "lobby") setMode(player ? "lobby" : "join");
+    if (raid.status === "lobby") {
+      if (player) setMode("lobby");
+      else setMode(isHost ? "lobby" : "join");
+    }
+
     if (raid.status === "live") setMode("battle");
     if (raid.status === "ended") setMode("ended");
-  }, [raid, player]);
+  }, [raid, player, isHost]);
 
   return (
     <main className="pageShell">
@@ -164,6 +178,9 @@ export default function RaidPage() {
           {raid && (
             <div className="raidSub">
               Boss: <b>{raid.boss_name}</b> — Status: <b>{raid.status}</b>
+              {isHost ? (
+                <span style={{ marginLeft: 10, opacity: 0.8 }}>• HOST</span>
+              ) : null}
             </div>
           )}
         </div>
@@ -189,7 +206,7 @@ export default function RaidPage() {
           players={players}
           onJoin={joinRaid}
           onStart={startBattle}
-          isHost={true}
+          isHost={isHost}
         />
       )}
 
@@ -202,7 +219,7 @@ export default function RaidPage() {
           players={players}
           onJoin={joinRaid}
           onStart={startBattle}
-          isHost={true}
+          isHost={isHost}
         />
       )}
 

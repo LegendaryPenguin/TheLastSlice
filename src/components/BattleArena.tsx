@@ -31,9 +31,14 @@ export default function BattleArena({
   const [shake, setShake] = useState(false);
   const [flashBoss, setFlashBoss] = useState(false);
 
-  const [localEnergy, setLocalEnergy] = useState<number>(
-    player?.energy ?? 100
-  );
+  // ✅ NEW: a ticking clock so countdown updates in realtime
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, []);
+
+  const [localEnergy, setLocalEnergy] = useState<number>(player?.energy ?? 100);
 
   useEffect(() => {
     setLocalEnergy(player?.energy ?? 100);
@@ -54,11 +59,12 @@ export default function BattleArena({
 
   const latestAttack = attacks?.[0] ?? null;
 
+  // ✅ UPDATED: depends on `now` so it ticks down
   const endsIn = useMemo(() => {
     if (!raid?.ends_at) return null;
-    const ms = new Date(raid.ends_at).getTime() - Date.now();
+    const ms = new Date(raid.ends_at).getTime() - now;
     return Math.max(0, Math.floor(ms / 1000));
-  }, [raid?.ends_at]);
+  }, [raid?.ends_at, now]);
 
   // Deduplicate attacks (fix React key warning + realtime duplication)
   const attacksDeduped = useMemo(() => {
@@ -119,9 +125,7 @@ export default function BattleArena({
           <div className="hud enemyHud">
             <div className="hudTop">
               <div>
-                <div className="hudTitle">
-                  {raid?.boss_name ?? "Boss"}
-                </div>
+                <div className="hudTitle">{raid?.boss_name ?? "Boss"}</div>
                 <div className="hudSub">RAID BOSS</div>
               </div>
 
@@ -154,9 +158,7 @@ export default function BattleArena({
             transition={{ duration: 0.15 }}
           >
             <div className="bossSprite">🍍🍕</div>
-            <div className="bossNameplate">
-              PINEAPPLE TITAN
-            </div>
+            <div className="bossNameplate">PINEAPPLE TITAN</div>
           </motion.div>
 
           {/* ATTACK FX */}
@@ -171,15 +173,9 @@ export default function BattleArena({
                 transition={{ duration: 0.35 }}
               >
                 <div className="atkLabel">
-                  {latestAttack.player_name} used{" "}
-                  <b>{latestAttack.move_name}</b>{" "}
-                  <span
-                    className={
-                      latestAttack.crit ? "critTag" : ""
-                    }
-                  >
-                    -{latestAttack.damage}{" "}
-                    {latestAttack.crit ? "CRIT!" : ""}
+                  {latestAttack.player_name} used <b>{latestAttack.move_name}</b>{" "}
+                  <span className={latestAttack.crit ? "critTag" : ""}>
+                    -{latestAttack.damage} {latestAttack.crit ? "CRIT!" : ""}
                   </span>
                 </div>
               </motion.div>
@@ -190,15 +186,11 @@ export default function BattleArena({
           <div className="hud playerHud">
             <div className="hudTop">
               <div>
-                <div className="hudTitle">
-                  {player?.display_name ?? "You"}
-                </div>
+                <div className="hudTitle">{player?.display_name ?? "You"}</div>
                 <div className="hudSub">ENERGY</div>
               </div>
 
-              <div className="hudSub">
-                Players: {players.length}
-              </div>
+              <div className="hudSub">Players: {players.length}</div>
             </div>
 
             <div className="hpRow">
@@ -225,11 +217,7 @@ export default function BattleArena({
                   key={m.id}
                   className="moveBtn"
                   onClick={() => doMove(m)}
-                  disabled={
-                    !player ||
-                    localEnergy < m.cost ||
-                    raid?.status !== "live"
-                  }
+                  disabled={!player || localEnergy < m.cost || raid?.status !== "live"}
                   title={`Cost ${m.cost} | Dmg ${m.minDmg}-${m.maxDmg}`}
                 >
                   <div className="moveName">{m.name}</div>
@@ -253,33 +241,14 @@ export default function BattleArena({
 
         <div className="attackFeed">
           {attacksDeduped.slice(0, 200).map((a: any) => (
-            <div
-              key={`${a.id}-${a.created_at ?? ""}`}
-              className="attackRow"
-            >
-              <div className="attackName">
-                {a.player_name}
-              </div>
-
-              <div className="attackMove">
-                {a.move_name}
-              </div>
-
-              <div
-                className={`attackDmg ${
-                  a.crit ? "crit" : ""
-                }`}
-              >
-                -{a.damage}
-              </div>
+            <div key={`${a.id}-${a.created_at ?? ""}`} className="attackRow">
+              <div className="attackName">{a.player_name}</div>
+              <div className="attackMove">{a.move_name}</div>
+              <div className={`attackDmg ${a.crit ? "crit" : ""}`}>-{a.damage}</div>
             </div>
           ))}
 
-          {attacksDeduped.length === 0 && (
-            <div className="muted">
-              No attacks yet.
-            </div>
-          )}
+          {attacksDeduped.length === 0 && <div className="muted">No attacks yet.</div>}
         </div>
 
         <div style={{ marginTop: 12 }} className="muted">
