@@ -9,6 +9,7 @@ export default function Lobby({
   raid,
   player,
   players,
+  privyUserId,
   onJoin,
   onStart,
   isHost = false,
@@ -18,13 +19,13 @@ export default function Lobby({
   raid: any;
   player: any;
   players: any[];
-  onJoin: (f: string, l: string, t: string) => void;
+  privyUserId: string | null;
+  onJoin: (f: string, l: string) => void;
   onStart?: () => void;
   isHost?: boolean;
 }) {
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");
-  const [tag, setTag] = useState("");
 
   const joinedCount = players?.length ?? 0;
 
@@ -56,31 +57,36 @@ export default function Lobby({
       <div className="card" style={{ display: "flex", flexDirection: "column", minHeight: 0 }}>
         <h2 style={{ marginTop: 0 }}>Lobby</h2>
         <p style={{ opacity: 0.8, marginTop: 0 }}>
-          Join with your name + 5-digit tag. Once enough people join, the host starts the raid.
+          Connect wallet or continue as guest first. Then enter your name to join.
         </p>
 
-        {/* If not joined yet -> show join form */}
+        {/* If not joined yet -> show join form or connect prompt */}
         {!player && (
           <div className="form">
-            <input
-              placeholder="First Name"
-              value={first}
-              onChange={(e) => setFirst(e.target.value)}
-            />
-            <input
-              placeholder="Last Name"
-              value={last}
-              onChange={(e) => setLast(e.target.value)}
-            />
-            <input
-              placeholder="5-digit tag (e.g. 12345)"
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
-            />
-
-            <button className="btnPrimary" onClick={() => onJoin(first, last, tag)}>
-              Join Room {code}
-            </button>
+            {!privyUserId ? (
+              <div className="pill" style={{ borderStyle: "solid" }}>
+                <div style={{ fontWeight: 900, marginBottom: 6 }}>🔗 Connect first</div>
+                <div style={{ opacity: 0.85, lineHeight: 1.4 }}>
+                  Use the &quot;Connect Wallet&quot; or &quot;Continue as Guest&quot; button in the top-right corner to identify yourself, then come back here to join.
+                </div>
+              </div>
+            ) : (
+              <>
+                <input
+                  placeholder="First Name"
+                  value={first}
+                  onChange={(e) => setFirst(e.target.value)}
+                />
+                <input
+                  placeholder="Last Name"
+                  value={last}
+                  onChange={(e) => setLast(e.target.value)}
+                />
+                <button className="btnPrimary" onClick={() => onJoin(first, last)}>
+                  Join Room {code}
+                </button>
+              </>
+            )}
 
             {/* Host-only share helper (clean, small) */}
             {isHost && (

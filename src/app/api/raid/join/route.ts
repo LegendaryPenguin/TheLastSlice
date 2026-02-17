@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { cleanName, isFiveDigits } from "@/lib/utils";
+import { cleanName, isValidPrivyUserId } from "@/lib/utils";
 
 export async function POST(req: Request) {
   const sb = supabaseServer();
@@ -9,13 +9,18 @@ export async function POST(req: Request) {
   const code = String(body.code || "").toUpperCase().trim();
   const first = cleanName(String(body.firstName || ""));
   const last = cleanName(String(body.lastName || ""));
-  const tag = String(body.tag || "").trim();
+  const privyUserId = String(body.privyUserId || "").trim();
 
-  if (!code || !first || !last || !isFiveDigits(tag)) {
-    return NextResponse.json({ error: "Invalid join fields." }, { status: 400 });
+  if (!code || !first || !last || !isValidPrivyUserId(privyUserId)) {
+    return NextResponse.json(
+      { error: "Connect wallet or continue as guest first, then enter your name." },
+      { status: 400 }
+    );
   }
 
-  const displayName = `${first} ${last} #${tag}`;
+  // Use short Privy ID for display (last 8 chars)
+  const shortId = privyUserId.slice(-8);
+  const displayName = `${first} ${last} #${shortId}`;
 
   const { data: raid, error: raidErr } = await sb
     .from("raids")
@@ -38,7 +43,7 @@ export async function POST(req: Request) {
       raid_id: raid.id,
       first_name: first,
       last_name: last,
-      tag,
+      tag: privyUserId,
       display_name: displayName,
       energy: 100,
     })

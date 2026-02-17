@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { pickFourRandomMoves } from "@/lib/moves";
 import Lobby from "@/components/Lobby";
@@ -12,6 +13,7 @@ type Mode = "join" | "lobby" | "battle" | "ended";
 
 export default function RaidPage() {
   const params = useParams<{ code: string }>();
+  const { user } = usePrivy();
   const code = (params?.code ?? "ENTER").toString().toUpperCase();
 
   const [mode, setMode] = useState<Mode>("join");
@@ -102,11 +104,12 @@ export default function RaidPage() {
     };
   }, [raid?.id, code]);
 
-  async function joinRaid(firstName: string, lastName: string, tag: string) {
+  async function joinRaid(firstName: string, lastName: string) {
+    if (!user?.id) return alert("Connect wallet or continue as guest first.");
     const res = await fetch("/api/raid/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, firstName, lastName, tag }),
+      body: JSON.stringify({ code, firstName, lastName, privyUserId: user.id }),
     });
     const json = await res.json();
     if (json.error) return alert(json.error);
@@ -174,6 +177,7 @@ export default function RaidPage() {
           raid={raid}
           player={player}
           players={players}
+          privyUserId={user?.id ?? null}
           onJoin={joinRaid}
         />
       )}
@@ -185,6 +189,7 @@ export default function RaidPage() {
           raid={raid}
           player={player}
           players={players}
+          privyUserId={user?.id ?? null}
           onJoin={joinRaid}
         />
       )}
