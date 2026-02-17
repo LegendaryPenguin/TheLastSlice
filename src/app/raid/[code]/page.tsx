@@ -119,19 +119,6 @@ export default function RaidPage() {
     await refreshState();
   }
 
-  async function startBattle() {
-    const res = await fetch("/api/raid/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-    const json = await res.json();
-    if (json.error) return alert(json.error);
-
-    setRaid(json.raid);
-    setMode("battle");
-  }
-
   async function doAttack(moveId: number) {
     if (!player) return alert("Join first.");
 
@@ -147,7 +134,7 @@ export default function RaidPage() {
     setMoveSet(pickFourRandomMoves());
   }
 
-  // Single source of truth for mode switching
+  // Single source of truth for mode switching (PLAYER PAGE ONLY)
   useEffect(() => {
     if (!raid) return;
 
@@ -188,8 +175,6 @@ export default function RaidPage() {
           player={player}
           players={players}
           onJoin={joinRaid}
-          onStart={startBattle}
-          isHost={true}
         />
       )}
 
@@ -201,8 +186,6 @@ export default function RaidPage() {
           player={player}
           players={players}
           onJoin={joinRaid}
-          onStart={startBattle}
-          isHost={true}
         />
       )}
 
