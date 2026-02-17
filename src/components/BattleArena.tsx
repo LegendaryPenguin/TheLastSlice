@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Move } from "@/lib/moves";
@@ -9,6 +10,47 @@ function hpColor(pct: number) {
   if (pct > 0.5) return "#22c55e";
   if (pct > 0.2) return "#f59e0b";
   return "#ef4444";
+}
+
+/** Hash attack id to 0–7 for position index */
+function positionIndex(id: string): number {
+  let h = 0;
+  for (let i = 0; i < Math.min(id.length, 8); i++) h += id.charCodeAt(i);
+  return h % 8;
+}
+
+const POPUP_POSITIONS = [
+  { top: "15%", left: "15%" },
+  { top: "8%", left: "50%", transform: "translateX(-50%)" },
+  { top: "15%", right: "15%", left: "auto" },
+  { top: "50%", right: "8%", left: "auto", transform: "translateY(-50%)" },
+  { bottom: "15%", right: "15%", left: "auto" },
+  { bottom: "8%", left: "50%", transform: "translateX(-50%)" },
+  { bottom: "15%", left: "15%" },
+  { top: "50%", left: "8%", transform: "translateY(-50%)" },
+];
+
+function AttackPopup({ attack }: { attack: any }) {
+  const idx = positionIndex(String(attack.id));
+  const pos = POPUP_POSITIONS[idx];
+  return (
+    <motion.div
+      className="atkPopup"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.25 }}
+      style={{ ...pos }}
+    >
+      <div className="atkPopupLine">{attack.player_name}</div>
+      <div className="atkPopupLine">
+        used <b>{attack.move_name}</b>
+      </div>
+      <div className={`atkPopupLine ${attack.crit ? "critTag" : ""}`}>
+        -{attack.damage} {attack.crit ? "CRIT!" : ""}
+      </div>
+    </motion.div>
+  );
 }
 
 export default function BattleArena({
@@ -189,12 +231,7 @@ export default function BattleArena({
                       initial={{ scale: 0.85, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       transition={{ duration: 0.18 }}
-                      style={{
-                        fontSize: 74,
-                        fontWeight: 900,
-                        letterSpacing: 2,
-                        textShadow: "0 10px 30px rgba(0,0,0,0.55)",
-                      }}
+                      className="countdownNum"
                     >
                       {startOverlay.n}
                     </motion.div>
@@ -214,9 +251,11 @@ export default function BattleArena({
                       backdropFilter: "blur(10px)",
                     }}
                   >
-                    <div style={{ fontSize: 44 }}>🍍🍕</div>
+                    <div style={{ width: 80, height: 80, position: "relative" }}>
+                      <Image src="/PizzaMan.svg" alt="Boss" fill className="object-contain" />
+                    </div>
                     <div style={{ fontWeight: 900, letterSpacing: 1 }}>
-                      PINEAPPLE TITAN APPEARS
+                      PIZZA TITAN APPEARS
                     </div>
                   </div>
                 )}
@@ -254,36 +293,38 @@ export default function BattleArena({
             </div>
           </div>
 
-          {/* BOSS + ATTACK FX (stacked so animations appear on top of sprite) */}
-          <div className="bossRow">
+          {/* BOSS + ATTACK FX + Attack info (below sprite) */}
+          <div className="bossArea">
             <motion.div
               className={`boss ${flashBoss ? "hitFlash" : ""}`}
               animate={{ scale: flashBoss ? 1.02 : 1 }}
               transition={{ duration: 0.15 }}
             >
-              <div className="bossSprite">🍍🍕</div>
-              <div className="bossNameplate">PINEAPPLE TITAN</div>
+              <div className="bossSprite bossSpriteWrap" style={{ position: "relative" }}>
+                <Image src="/PizzaMan.svg" alt="Boss" fill className="object-contain" />
+              </div>
+              <div className="bossNameplate">PIZZA TITAN</div>
             </motion.div>
 
-            {/* ATTACK FX — positioned over the boss */}
+            {/* ATTACK FX — visual effects on sprite only */}
             <AnimatePresence>
               {latestAttack && (
                 <motion.div
-                  key={latestAttack.id}
+                  key={`fx-${latestAttack.id}`}
                   className={`atkFx atk-${latestAttack.anim_type}`}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 1.05 }}
                   transition={{ duration: 0.35 }}
-                >
-                  <div className="atkLabel">
-                    {latestAttack.player_name} used <b>{latestAttack.move_name}</b>{" "}
-                    <span className={latestAttack.crit ? "critTag" : ""}>
-                      -{latestAttack.damage} {latestAttack.crit ? "CRIT!" : ""}
-                    </span>
-                  </div>
-                </motion.div>
+                />
               )}
+            </AnimatePresence>
+
+            {/* Attack popups — multiline oval, random positions around sprite, smaller */}
+            <AnimatePresence>
+            {latestAttack && (
+              <AttackPopup key={`label-${latestAttack.id}`} attack={latestAttack} />
+            )}
             </AnimatePresence>
           </div>
 
@@ -312,9 +353,7 @@ export default function BattleArena({
               </div>
             </div>
 
-            <div className="hudSub" style={{ marginTop: 10 }}>
-              Choose 1 of 4 random attacks
-            </div>
+            <div className="hudSub moveHint">Choose 1 of 4 attacks</div>
 
             <div className="moveGrid">
               {moves.map((m) => (
@@ -342,7 +381,7 @@ export default function BattleArena({
 
       {/* RIGHT — LIVE ATTACKS */}
       <div className="card cardCol">
-        <h3 style={{ marginTop: 0 }}>Live Attacks</h3>
+        <h3 className="cardTitle">Live Attacks</h3>
 
         <div className="attackFeed">
           {attacksDeduped.slice(0, 200).map((a: any) => (

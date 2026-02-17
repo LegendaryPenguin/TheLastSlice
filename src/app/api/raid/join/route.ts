@@ -18,9 +18,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // Use short Privy ID for display (last 8 chars)
-  const shortId = privyUserId.slice(-8);
-  const displayName = `${first} ${last} #${shortId}`;
+  const displayName = `${first} ${last}`;
 
   const { data: raid, error: raidErr } = await sb
     .from("raids")

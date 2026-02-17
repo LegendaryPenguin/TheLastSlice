@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -64,11 +65,18 @@ export default function Leaderboard({ raid, players }: { raid: any; players: any
               position: "absolute",
               left: `${8 + (i * 9) % 80}%`,
               bottom: -20,
-              fontSize: defeated ? 22 : 18,
+              width: defeated ? 22 : 18,
+              height: defeated ? 22 : 18,
               filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.45))",
             }}
           >
-            {defeated ? "🍕" : "🥀"}
+            {defeated ? (
+              <span style={{ position: "relative", display: "block", width: "100%", height: "100%" }}>
+                <Image src="/PizzaMan.svg" alt="" fill className="object-contain" sizes="22px" />
+              </span>
+            ) : (
+              <span style={{ fontSize: 18 }}>🥀</span>
+            )}
           </motion.div>
         ))}
       </div>

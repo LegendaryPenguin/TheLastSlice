@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -78,7 +79,7 @@ export default function HomePage() {
               flex: "0 0 auto",
             }}
           >
-            <span style={{ fontSize: 28 }}>🍕</span>
+            <Image src="/PizzaMan.svg" alt="" width={36} height={36} className="object-contain" />
           </div>
 
           <div style={{ minWidth: 0 }}>
@@ -123,7 +124,7 @@ export default function HomePage() {
                 color: "rgba(255,255,255,0.92)",
               }}
             >
-              PINEAPPLE PIZZA TITAN
+              PIZZA TITAN
             </div>
             <div style={{ marginTop: 6, color: "rgba(255,255,255,0.65)" }}>
               Raid Boss
@@ -146,7 +147,9 @@ export default function HomePage() {
               flex: "0 0 auto",
             }}
           >
-            <div style={{ fontSize: 34 }}>🍍🍕</div>
+            <div style={{ width: 60, height: 60, position: "relative" }}>
+              <Image src="/PizzaMan.svg" alt="" fill className="object-contain" />
+            </div>
           </motion.div>
         </div>
 

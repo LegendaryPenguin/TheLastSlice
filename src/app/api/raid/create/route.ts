@@ -13,7 +13,7 @@ export async function POST() {
     .insert({
       code,
       status: "lobby",
-      boss_name: "Pineapple Pizza Titan",
+      boss_name: "Pizza Titan",
       boss_hp: 3600,
       boss_hp_max: 3600,
       duration_seconds: 65,

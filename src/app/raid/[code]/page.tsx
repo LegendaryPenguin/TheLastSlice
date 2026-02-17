@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
@@ -160,30 +161,50 @@ export default function RaidPage() {
     if (raid.status === "ended") setMode("ended");
   }, [raid, player]);
 
+  // When in battle, poll for raid end (timer expiry or boss defeated) so we auto-switch to leaderboard
+  useEffect(() => {
+    if (mode !== "battle" || !raid?.ends_at) return;
+
+    const checkEnded = () => {
+      if (raid.status === "ended") return;
+      if (Date.now() > new Date(raid.ends_at).getTime()) {
+        refreshState();
+      }
+    };
+
+    const id = setInterval(checkEnded, 1000);
+    return () => clearInterval(id);
+  }, [mode, raid?.id, raid?.ends_at, raid?.status]);
+
   return (
     <main className="pageShell">
-      <div className="raidTop">
-        <div>
-          <div className="raidTitle">🍍🍕 Room {code}</div>
-          {raid && (
-            <div className="raidSub">
-              Boss: <b>{raid.boss_name}</b> — Status: <b>{raid.status}</b>
+      {mode !== "battle" && (
+        <div className="raidTop">
+          <div>
+            <div className="raidTitle" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Image src="/PizzaMan.svg" alt="" width={28} height={28} className="object-contain" />
+              Room {code}
             </div>
-          )}
-        </div>
+            {raid && (
+              <div className="raidSub">
+                Boss: <b>{raid.boss_name}</b> — Status: <b>{raid.status}</b>
+              </div>
+            )}
+          </div>
 
-        <div className="raidRight">
-          <button
-            className="btn"
-            onClick={() => {
-              if (code !== "ENTER") refreshState(true);
-            }}
-            disabled={refreshLoading}
-          >
-            {refreshLoading ? "…" : "Refresh"}
-          </button>
+          <div className="raidRight">
+            <button
+              className="btn"
+              onClick={() => {
+                if (code !== "ENTER") refreshState(true);
+              }}
+              disabled={refreshLoading}
+            >
+              {refreshLoading ? "…" : "Refresh"}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {mode === "join" && (
         <Lobby

@@ -34,6 +34,14 @@ input {
 
 .muted { color: var(--muted); }
 
+/* Compact header — fits one line on mobile */
+.appHeader { font-size: 14px; }
+.appHeaderLink { font-size: 14px; white-space: nowrap; }
+@media (min-width: 480px) {
+  .appHeader { padding: 10px 14px !important; font-size: 16px; }
+  .appHeaderLink { font-size: 16px; }
+}
+
 /* Buttons */
 .btn, .btnPrimary{
   border-radius: 14px;
@@ -62,6 +70,11 @@ input {
   padding: 16px;
   backdrop-filter: blur(10px);
 }
+.cardTitle { margin: 0; font-size: 16px; font-weight: 800; }
+@media (max-width: 480px) {
+  .card { padding: 12px; }
+  .cardTitle { font-size: 13px; }
+}
 
 /* Header */
 .raidTop {
@@ -70,9 +83,15 @@ input {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 .raidTitle { font-size: 22px; font-weight: 800; }
 .raidSub { color: var(--muted); margin-top: 4px; font-size: 13px; }
+
+@media (max-width: 480px) {
+  .raidTitle { font-size: 18px; }
+  .raidSub { font-size: 12px; }
+}
 
 /* ===== Responsive layout (single source of truth) ===== */
 .grid2 {
@@ -105,10 +124,33 @@ input {
     min-height: auto;
     max-height: none;
   }
+
+  /* Mobile: battle area flows naturally, everything visible */
+  .battleField {
+    height: auto;
+    min-height: min(500px, 85vh);
+    grid-template-rows: auto minmax(120px, 1fr) auto;
+  }
+
+  .bossArea { min-height: 100px; }
+
+  /* Live Attacks: scrollable feed, sensible min height */
+  .cardCol { min-height: 180px; }
+}
+
+@media (max-width: 480px) {
+  .battleField {
+    padding: 10px;
+    min-height: min(450px, 80vh);
+  }
+
+  .hud { padding: 8px; }
+  .hudTitle { font-size: 11px; }
+  .hudSub { font-size: 9px; }
 }
 
 /* ===== Battle area ===== */
-.battleShell { border-radius: 16px; overflow: hidden; }
+.battleShell { border-radius: 16px; overflow: hidden; width: 100%; max-width: 100%; }
 
 .battleField {
   position: relative;
@@ -120,6 +162,7 @@ input {
   display: grid;
   grid-template-rows: auto 1fr auto; /* enemy HUD / boss / player HUD */
   padding: 16px;
+  justify-items: center;
 }
 
 /* Background layers behind everything */
@@ -157,35 +200,37 @@ input {
   z-index: 2;
 }
 
-/* HUD blocks (NOT absolute) */
+/* HUD blocks (NOT absolute) — centered */
 .hud {
-  width: min(520px, 92%);
+  width: min(520px, 95%);
+  max-width: 100%;
   background: rgba(255,255,255,0.82);
   color: rgba(0,0,0,0.88);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 10px;
   border: 1px solid rgba(0,0,0,0.12);
+  justify-self: center;
 }
 
 .enemyHud { grid-row: 1; z-index: 5; }
 .playerHud { grid-row: 3; z-index: 5; }
 
-.hudTop { display: flex; justify-content: space-between; gap: 10px; }
-.hudTitle { font-weight: 900; font-size: 14px; }
-.hudSub { font-size: 12px; opacity: 0.8; }
+.hudTop { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.hudTitle { font-weight: 900; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hudSub { font-size: 10px; opacity: 0.8; white-space: nowrap; }
 
-.hpRow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.hpRow { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 .hpLabel {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   background: rgba(0,0,0,0.85);
   color: white;
-  padding: 4px 8px;
-  border-radius: 10px;
+  padding: 3px 6px;
+  border-radius: 8px;
 }
 .hpOuter {
   flex: 1;
-  height: 12px;
+  height: 10px;
   background: rgba(0,0,0,0.85);
   border-radius: 999px;
   padding: 2px;
@@ -196,15 +241,18 @@ input {
   transition: width 550ms ease;
 }
 
-/* Boss row: contains boss + attack FX overlay */
-.bossRow {
+/* Boss area: contains boss + attack FX + attack info below */
+.bossArea {
   grid-row: 2;
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   z-index: 3;
 }
+
 
 /* Boss stays centered in middle row */
 .boss {
@@ -218,8 +266,41 @@ input {
 }
 
 .bossSprite {
-  font-size: 84px;
   filter: drop-shadow(0 12px 0 rgba(0,0,0,0.25));
+}
+
+.bossSpriteWrap {
+  width: 220px;
+  height: 220px;
+}
+
+@media (max-width: 480px) {
+  .bossSpriteWrap {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 979px) {
+  .bossSpriteWrap {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+.countdownNum {
+  font-size: 74px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.55);
+}
+
+@media (max-width: 480px) {
+  .countdownNum { font-size: 48px; }
+}
+
+@media (min-width: 481px) and (max-width: 979px) {
+  .countdownNum { font-size: 60px; }
 }
 
 .bossNameplate {
@@ -246,30 +327,34 @@ input {
   100% { transform: translate(0,0); }
 }
 
-/* Moves */
+/* Moves — always 2x2 grid, compact for mobile */
 .moveGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-@media (max-width: 520px) {
-  .moveGrid { grid-template-columns: 1fr; }
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .moveBtn {
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid rgba(0,0,0,0.15);
   background: white;
   color: rgba(0,0,0,0.9);
-  padding: 10px;
+  padding: 6px 8px;
   cursor: pointer;
   text-align: left;
 }
 .moveBtn:disabled { opacity: 0.55; cursor: not-allowed; }
-.moveName { font-weight: 900; font-size: 13px; }
-.moveMeta { display:flex; justify-content: space-between; margin-top: 6px; font-size: 11px; opacity: 0.8; }
+.moveName { font-weight: 900; font-size: 11px; line-height: 1.2; }
+.moveMeta { display: flex; justify-content: space-between; margin-top: 4px; font-size: 9px; opacity: 0.8; }
+.moveHint { margin-top: 6px !important; font-size: 10px; }
+
+@media (max-width: 480px) {
+  .moveGrid { gap: 5px; margin-top: 6px; }
+  .moveBtn { padding: 5px 6px; }
+  .moveName { font-size: 10px; }
+  .moveMeta { font-size: 8px; margin-top: 2px; }
+}
 
 /* ===== Right panel: scrolling feed fills height ===== */
 .cardCol {
@@ -277,6 +362,8 @@ input {
   flex-direction: column;
   height: 100%;
   min-height: 0; /* important for nested scroll */
+  width: 100%;
+  max-width: 100%;
 }
 
 .attackFeed {
@@ -298,6 +385,15 @@ input {
   background: rgba(0,0,0,0.18);
 }
 
+@media (max-width: 480px) {
+  .attackRow {
+    grid-template-columns: 1fr 1fr auto;
+    gap: 6px;
+    padding: 8px;
+    font-size: 12px;
+  }
+}
+
 .attackName { font-weight: 800; }
 .attackMove { opacity: 0.85; }
 .attackDmg { font-weight: 900; text-align: right; }
@@ -314,17 +410,27 @@ input {
   z-index: 5;
 }
 
-.atkLabel {
+/* Attack popup — multiline oval, random positions around sprite */
+.atkPopup {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.18);
-  padding: 10px 14px;
-  border-radius: 14px;
+  background: rgba(0,0,0,0.65);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
   font-weight: 800;
+  text-align: center;
+  line-height: 1.25;
+  z-index: 6;
+  min-width: 70px;
+  max-width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
 }
+.atkPopupLine { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
 .critTag{ color:#ff71ff; font-weight: 900; }
 
@@ -493,6 +599,18 @@ input {
   max-width: 1200px;
   margin: 0 auto;
   padding: 16px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 979px) {
+  .pageShell {
+    padding: 12px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
 }
 
 @media (min-width: 980px) {
@@ -502,7 +620,7 @@ input {
   }
 
   .pageShell {
-    height: calc(100vh - 72px); /* lock to viewport minus AppHeader */
+    height: calc(100vh - 52px); /* lock to viewport minus AppHeader */
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -536,7 +654,8 @@ input {
 
 @media (max-width: 979px) {
   html, body {
-    overflow: auto; /* allow normal scrolling on mobile */
+    overflow-x: hidden; /* prevent horizontal scroll */
+    overflow-y: auto;   /* allow vertical scroll */
   }
   .grid2 {
     grid-template-columns: 1fr;

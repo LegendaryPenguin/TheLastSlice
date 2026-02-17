@@ -14,6 +14,15 @@ export async function POST(req: Request) {
 
   if (raidErr || !raid) return NextResponse.json({ error: "Raid not found." }, { status: 404 });
 
+  // Auto-end raid if timer expired (status stays "live" until someone fetches state or attacks)
+  if (raid.status === "live" && raid.ends_at) {
+    const now = new Date();
+    if (now.getTime() > new Date(raid.ends_at).getTime()) {
+      await sb.from("raids").update({ status: "ended" }).eq("id", raid.id);
+      raid.status = "ended";
+    }
+  }
+
   const { data: players } = await sb
     .from("players")
     .select("*")
