@@ -1,100 +1,78 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { usePrivy, useWallets, useGuestAccounts } from "@privy-io/react-auth";
 
 function shortAddr(addr: string) {
-  return `${addr.slice(0, 6)}â€¦${addr.slice(-4)}`;
+  return addr.slice(0, 6) + "..." + addr.slice(-4);
 }
 
-
-
+/**
+ * PizzaAuth
+ *
+ * Silently creates a guest account and embedded wallet on first load.
+ * No login/logout UI -- just displays the single Privy wallet address.
+ *
+ * To get the address anywhere else in the app:
+ *   const { wallets } = useWallets();
+ *   const address = wallets.find(w => w.walletClientType === "privy")?.address;
+ */
 export default function PizzaAuth() {
-  const { ready, authenticated, user, login, logout, createWallet } =
-    usePrivy();
+  const { ready, authenticated } = usePrivy();
   const { wallets } = useWallets();
+  const { createGuestAccount } = useGuestAccounts();
 
+  // Silently create a guest account on first load
   useEffect(() => {
-    if (!ready || !authenticated || !user) return;
-
-    const hasEmbedded = wallets.some(
-      (w) => w.walletClientType === "privy"
-    );
-
-    if (!hasEmbedded) {
-      createWallet().catch((err) =>
-        console.warn("[PizzaAuth] createWallet error:", err)
+    if (ready && !authenticated) {
+      createGuestAccount().catch((err: unknown) =>
+        console.warn("[PizzaAuth] createGuestAccount error:", err)
       );
     }
-  }, [ready, authenticated, user, wallets, createWallet]);
+  }, [ready, authenticated, createGuestAccount]);
 
-  // â”€â”€ Not ready yet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  if (!ready) {
+  // The one wallet we care about -- the Privy embedded wallet
+  const wallet = wallets.find((w) => w.walletClientType === "privy");
+
+  if (!ready || !authenticated || !wallet) {
     return (
-      <div className="pizza-auth pizza-auth--loading">
-        <span className="pizza-auth__spinner" aria-label="Loading..." />
+      <div style={{ fontSize: 12, opacity: 0.5, marginBottom: 20 }}>
+        Creating wallet...
       </div>
     );
   }
 
-  // â”€â”€ Signed-out state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  if (!authenticated) {
-    return (
-      <div className="pizza-auth">
-        <button className="pizza-auth__btn pizza-auth__btn--login" onClick={login}>
-          Login
-        </button>
-      </div>
-    );
-  }
-
-  // â”€â”€ Signed-in state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
-    <div className="pizza-auth pizza-auth--signed-in">
-      {/* User ID */}
-      <div className="pizza-auth__row">
-        <span className="pizza-auth__label">User ID</span>
-        <code className="pizza-auth__value pizza-auth__value--id">
-          {user?.id ?? "â€”"}
-        </code>
-      </div>
-
-      {/* Wallet list */}
-      <div className="pizza-auth__wallets">
-        <span className="pizza-auth__label">
-          Wallets ({wallets.length})
-        </span>
-
-        {wallets.length === 0 ? (
-          <p className="pizza-auth__empty">No wallets linked yet.</p>
-        ) : (
-          <ul className="pizza-auth__wallet-list">
-            {wallets.map((w) => (
-              <li key={w.address} className="pizza-auth__wallet-item">
-                <span
-                  className={
-                    w.walletClientType === "privy"
-                      ? "pizza-auth__wallet-badge pizza-auth__wallet-badge--embedded"
-                      : "pizza-auth__wallet-badge pizza-auth__wallet-badge--external"
-                  }
-                >
-                  {w.walletClientType === "privy" ? "embedded" : w.walletClientType}
-                </span>
-                <code className="pizza-auth__value">{shortAddr(w.address)}</code>
-                <span className="pizza-auth__chain">chain {w.chainId}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Logout */}
-      <button
-        className="pizza-auth__btn pizza-auth__btn--logout"
-        onClick={() => logout()}
+    <div
+      style={{
+        marginBottom: 20,
+        padding: "10px 14px",
+        background: "rgba(255,255,255,0.05)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        borderRadius: 8,
+        fontSize: 12,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      <span
+        style={{
+          background: "#e63946",
+          color: "#fff",
+          padding: "2px 8px",
+          borderRadius: 4,
+          fontSize: 10,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: 1,
+        }}
       >
-        Logout
-      </button>
+        wallet
+      </span>
+      <code title={wallet.address} style={{ fontSize: 13 }}>
+        {shortAddr(wallet.address)}
+      </code>
     </div>
   );
 }
