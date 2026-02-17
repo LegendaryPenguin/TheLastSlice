@@ -1,0 +1,8 @@
+[00:00:01.802] Server  LOG     ✓ Ready in 1253ms
+[00:00:04.023] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:08.834] Browser LOG     create raid: 200 {"raid":{"id":"09f0d33b-8c3b-490f-8fbf-dec5d6f2bd28","code":"OKYGRN","status":"lobby","boss_name":"Pineapple Pizza Titan","boss_hp":3600,"boss_hp_max":3600,"duration_seconds":60,"started_at":null,"ends_at":null,"created_at":"2026-02-17T19:12:44.368355+00:00"}}
+[00:00:55.030] Browser LOG     create raid: 200 {"raid":{"id":"db5428db-d263-4709-81fa-9430ec7ae802","code":"J2NR2K","status":"lobby","boss_name":"Pineapple Pizza Titan","boss_hp":3600,"boss_hp_max":3600,"duration_seconds":60,"started_at":null,"ends_at":null,"created_at":"2026-02-17T19:13:30.657807+00:00"}}
+[00:01:09.055] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:28.079] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:39.674] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:08.553] Browser LOG     create raid: 200 {"raid":{"id":"870ab898-3c92-4246-bca2-8ae7651e0b47","code":"YIV16R","status":"lobby","boss_name":"Pineapple Pizza Titan","boss_hp":3600,"boss_hp_max":3600,"duration_seconds":60,"started_at":null,"ends_at":null,"created_at":"2026-02-17T19:16:44.183757+00:00"}}
