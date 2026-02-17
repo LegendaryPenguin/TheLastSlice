@@ -19,6 +19,9 @@ export default function HostRoomPage() {
   const [raid, setRaid] = useState<any>(null);
   const [player, setPlayer] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [startLoading, setStartLoading] = useState(false);
+  const [refreshLoading, setRefreshLoading] = useState(false);
 
   useEffect(() => {
     if (!code || code === "ENTER") return;
@@ -31,18 +34,22 @@ export default function HostRoomPage() {
     }
   }, [code]);
 
-  async function refreshState() {
-    const res = await fetch("/api/raid/state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-
-    const json = await res.json();
-    if (json.error) return;
-
-    setRaid(json.raid);
-    setPlayers(json.players);
+  async function refreshState(showLoading = false) {
+    if (showLoading && refreshLoading) return;
+    if (showLoading) setRefreshLoading(true);
+    try {
+      const res = await fetch("/api/raid/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const json = await res.json();
+      if (json.error) return;
+      setRaid(json.raid);
+      setPlayers(json.players);
+    } finally {
+      if (showLoading) setRefreshLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -89,34 +96,45 @@ export default function HostRoomPage() {
 
   async function joinRaid(firstName: string, lastName: string) {
     if (!user?.id) return alert("Connect wallet or continue as guest first.");
-    const res = await fetch("/api/raid/join", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, firstName, lastName, privyUserId: user.id }),
-    });
-
-    const json = await res.json();
-    if (json.error) return alert(json.error);
-
-    setRaid(json.raid);
-    setPlayer(json.player);
-    localStorage.setItem(`raid:${code}:player`, JSON.stringify(json.player));
-
-    setMode("lobby");
-    await refreshState();
+    if (joinLoading) return;
+    setJoinLoading(true);
+    try {
+      const res = await fetch("/api/raid/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, firstName, lastName, privyUserId: user.id }),
+      });
+      const json = await res.json();
+      if (json.error) return alert(json.error);
+      setRaid(json.raid);
+      setPlayer(json.player);
+      localStorage.setItem(`raid:${code}:player`, JSON.stringify(json.player));
+      setMode("lobby");
+      await refreshState();
+    } finally {
+      setJoinLoading(false);
+    }
   }
 
   async function startRaid() {
-    const res = await fetch("/api/raid/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-
-    const json = await res.json();
-    if (json.error) return alert(json.error);
-
-    router.push(`/raid/${code}`);
+    if (startLoading) return;
+    setStartLoading(true);
+    try {
+      const res = await fetch("/api/raid/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const json = await res.json();
+      if (json.error) {
+        setStartLoading(false);
+        return alert(json.error);
+      }
+      router.push(`/raid/${code}`);
+    } catch (e: any) {
+      setStartLoading(false);
+      alert(e?.message || "Start raid failed.");
+    }
   }
 
   useEffect(() => {
@@ -134,8 +152,8 @@ export default function HostRoomPage() {
         </div>
 
         <div className="raidRight">
-          <button className="btn" onClick={refreshState}>
-            Refresh
+          <button className="btn" onClick={() => refreshState(true)} disabled={refreshLoading}>
+            {refreshLoading ? "…" : "Refresh"}
           </button>
         </div>
       </div>
@@ -147,6 +165,8 @@ export default function HostRoomPage() {
         player={player}
         players={players}
         privyUserId={user?.id ?? null}
+        joinLoading={joinLoading}
+        startLoading={startLoading}
         onJoin={joinRaid}
         onStart={startRaid}
         isHost={true}

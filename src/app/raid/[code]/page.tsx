@@ -21,6 +21,9 @@ export default function RaidPage() {
   const [player, setPlayer] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
   const [attacks, setAttacks] = useState<any[]>([]);
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [attackLoading, setAttackLoading] = useState(false);
+  const [refreshLoading, setRefreshLoading] = useState(false);
 
   const [moveSet, setMoveSet] = useState(() => pickFourRandomMoves());
 
@@ -36,21 +39,24 @@ export default function RaidPage() {
     }
   }, [code]);
 
-  async function refreshState() {
+  async function refreshState(showLoading = false) {
     if (!code || code === "ENTER") return;
-
-    const res = await fetch("/api/raid/state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-
-    const json = await res.json();
-    if (json.error) return;
-
-    setRaid(json.raid);
-    setPlayers(json.players);
-    setAttacks(json.attacks);
+    if (showLoading && refreshLoading) return;
+    if (showLoading) setRefreshLoading(true);
+    try {
+      const res = await fetch("/api/raid/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const json = await res.json();
+      if (json.error) return;
+      setRaid(json.raid);
+      setPlayers(json.players);
+      setAttacks(json.attacks);
+    } finally {
+      if (showLoading) setRefreshLoading(false);
+    }
   }
 
   // Initial fetch (guarded)
@@ -106,35 +112,43 @@ export default function RaidPage() {
 
   async function joinRaid(firstName: string, lastName: string) {
     if (!user?.id) return alert("Connect wallet or continue as guest first.");
-    const res = await fetch("/api/raid/join", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, firstName, lastName, privyUserId: user.id }),
-    });
-    const json = await res.json();
-    if (json.error) return alert(json.error);
-
-    setRaid(json.raid);
-    setPlayer(json.player);
-    localStorage.setItem(`raid:${code}:player`, JSON.stringify(json.player));
-    setMode("lobby");
-
-    await refreshState();
+    if (joinLoading) return;
+    setJoinLoading(true);
+    try {
+      const res = await fetch("/api/raid/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, firstName, lastName, privyUserId: user.id }),
+      });
+      const json = await res.json();
+      if (json.error) return alert(json.error);
+      setRaid(json.raid);
+      setPlayer(json.player);
+      localStorage.setItem(`raid:${code}:player`, JSON.stringify(json.player));
+      setMode("lobby");
+      await refreshState();
+    } finally {
+      setJoinLoading(false);
+    }
   }
 
   async function doAttack(moveId: number) {
     if (!player) return alert("Join first.");
-
-    const res = await fetch("/api/raid/attack", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, playerId: player.id, moveId }),
-    });
-    const json = await res.json();
-    if (json.error) return;
-
-    await refreshState();
-    setMoveSet(pickFourRandomMoves());
+    if (attackLoading) return;
+    setAttackLoading(true);
+    try {
+      const res = await fetch("/api/raid/attack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, playerId: player.id, moveId }),
+      });
+      const json = await res.json();
+      if (json.error) return;
+      await refreshState();
+      setMoveSet(pickFourRandomMoves());
+    } finally {
+      setAttackLoading(false);
+    }
   }
 
   // Single source of truth for mode switching (PLAYER PAGE ONLY)
@@ -162,10 +176,11 @@ export default function RaidPage() {
           <button
             className="btn"
             onClick={() => {
-              if (code !== "ENTER") refreshState();
+              if (code !== "ENTER") refreshState(true);
             }}
+            disabled={refreshLoading}
           >
-            Refresh
+            {refreshLoading ? "…" : "Refresh"}
           </button>
         </div>
       </div>
@@ -178,6 +193,7 @@ export default function RaidPage() {
           player={player}
           players={players}
           privyUserId={user?.id ?? null}
+          joinLoading={joinLoading}
           onJoin={joinRaid}
         />
       )}
@@ -190,6 +206,7 @@ export default function RaidPage() {
           player={player}
           players={players}
           privyUserId={user?.id ?? null}
+          joinLoading={joinLoading}
           onJoin={joinRaid}
         />
       )}
@@ -202,6 +219,7 @@ export default function RaidPage() {
           players={players}
           attacks={attacks}
           moves={moveSet}
+          attackLoading={attackLoading}
           onAttack={doAttack}
         />
       )}

@@ -18,6 +18,7 @@ export default function BattleArena({
   players,
   attacks,
   moves,
+  attackLoading = false,
   onAttack,
 }: {
   code: string;
@@ -26,6 +27,7 @@ export default function BattleArena({
   players: any[];
   attacks: any[];
   moves: Move[];
+  attackLoading?: boolean;
   onAttack: (moveId: number) => Promise<void> | void;
 }) {
   const [shake, setShake] = useState(false);
@@ -320,7 +322,7 @@ export default function BattleArena({
                   key={m.id}
                   className="moveBtn"
                   onClick={() => doMove(m)}
-                  disabled={!player || localEnergy < m.cost || raid?.status !== "live"}
+                  disabled={!player || localEnergy < m.cost || raid?.status !== "live" || attackLoading}
                   title={`Cost ${m.cost} | Dmg ${m.minDmg}-${m.maxDmg}`}
                 >
                   <div className="moveName">{m.name}</div>

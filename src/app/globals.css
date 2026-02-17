@@ -40,6 +40,7 @@ input {
   padding: 12px 16px;
   border: 2px solid rgba(255,255,255,0.18);
   background: rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.95);
   box-shadow: 0 10px 24px rgba(0,0,0,0.35);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -48,6 +49,7 @@ input {
 }
 .btnPrimary{
   background: linear-gradient(180deg, rgba(168,85,247,0.95), rgba(88,28,135,0.85));
+  color: rgba(255,255,255,0.95);
 }
 .btn:hover, .btnPrimary:hover{ transform: translateY(-1px); }
 .btn:disabled, .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -260,6 +262,7 @@ input {
   border-radius: 12px;
   border: 1px solid rgba(0,0,0,0.15);
   background: white;
+  color: rgba(0,0,0,0.9);
   padding: 10px;
   cursor: pointer;
   text-align: left;

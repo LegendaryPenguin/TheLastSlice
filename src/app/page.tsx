@@ -11,23 +11,28 @@ function normalizeCode(raw: string) {
 export default function HomePage() {
   const router = useRouter();
   const [code, setCode] = useState("");
+  const [hostLoading, setHostLoading] = useState(false);
 
   const canJoin = useMemo(() => normalizeCode(code).length >= 4, [code]);
 
   async function onHost() {
-  try {
-    const res = await fetch("/api/raid/create", { method: "POST" });
-    const json = await res.json();
-    if (!res.ok || json?.error) return alert(json?.error || "Create raid failed.");
-    router.push(`/host/${json.raid.code}`);
-  } catch (e: any) {
-    alert(e?.message || "Create raid failed.");
+    if (hostLoading) return;
+    setHostLoading(true);
+    try {
+      const res = await fetch("/api/raid/create", { method: "POST" });
+      const json = await res.json();
+      if (!res.ok || json?.error) {
+        setHostLoading(false);
+        return alert(json?.error || "Create raid failed.");
+      }
+      router.push(`/host/${json.raid.code}`);
+    } catch (e: any) {
+      setHostLoading(false);
+      alert(e?.message || "Create raid failed.");
+    }
   }
-}
 
-
-
-function onJoin() {
+  function onJoin() {
   const c = normalizeCode(code);
   if (!c) return;
   router.push(`/raid/${c}`);
@@ -148,6 +153,7 @@ function onJoin() {
         <div style={{ marginTop: 18, display: "grid", gap: 14 }}>
           <button
             onClick={onHost}
+            disabled={hostLoading}
             style={{
               width: "100%",
               padding: "16px 18px",
@@ -160,10 +166,11 @@ function onJoin() {
               letterSpacing: 1,
               textTransform: "uppercase",
               boxShadow: "0 18px 36px rgba(0,0,0,0.45)",
-              cursor: "pointer",
+              cursor: hostLoading ? "not-allowed" : "pointer",
+              opacity: hostLoading ? 0.65 : 1,
             }}
           >
-            Host a Raid
+            {hostLoading ? "Creating…" : "Host a Raid"}
           </button>
 
           <div

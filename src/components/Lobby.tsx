@@ -10,6 +10,8 @@ export default function Lobby({
   player,
   players,
   privyUserId,
+  joinLoading = false,
+  startLoading = false,
   onJoin,
   onStart,
   isHost = false,
@@ -20,6 +22,8 @@ export default function Lobby({
   player: any;
   players: any[];
   privyUserId: string | null;
+  joinLoading?: boolean;
+  startLoading?: boolean;
   onJoin: (f: string, l: string) => void;
   onStart?: () => void;
   isHost?: boolean;
@@ -64,9 +68,9 @@ export default function Lobby({
             <motion.button
               className="btnPrimary"
               onClick={onStart}
-              disabled={!canStart}
-              whileHover={canStart ? { y: -1 } : undefined}
-              whileTap={canStart ? { scale: 0.99 } : undefined}
+              disabled={!canStart || startLoading}
+              whileHover={canStart && !startLoading ? { y: -1 } : undefined}
+              whileTap={canStart && !startLoading ? { scale: 0.99 } : undefined}
               style={{
                 width: "min(560px, 100%)",
                 justifySelf: "center",
@@ -75,11 +79,11 @@ export default function Lobby({
                 borderRadius: 18,
                 fontSize: 18,
                 letterSpacing: 2,
-                opacity: canStart ? 1 : 0.55,
+                opacity: canStart && !startLoading ? 1 : 0.55,
               }}
-              title={canStart ? "Start the raid" : "Need at least 1 player in the room"}
+              title={startLoading ? "Starting…" : canStart ? "Start the raid" : "Need at least 1 player in the room"}
             >
-              START RAID
+              {startLoading ? "STARTING…" : "START RAID"}
             </motion.button>
           )}
 
@@ -144,8 +148,12 @@ export default function Lobby({
               <>
                 <input placeholder="First Name" value={first} onChange={(e) => setFirst(e.target.value)} />
                 <input placeholder="Last Name" value={last} onChange={(e) => setLast(e.target.value)} />
-                <button className="btnPrimary" onClick={() => onJoin(first, last)}>
-                  Join Room {code}
+                <button
+                  className="btnPrimary"
+                  onClick={() => onJoin(first, last)}
+                  disabled={joinLoading}
+                >
+                  {joinLoading ? "Joining…" : `Join Room ${code}`}
                 </button>
               </>
             )}

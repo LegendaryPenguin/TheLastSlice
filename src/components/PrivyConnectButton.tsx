@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { usePrivy, useGuestAccounts } from "@privy-io/react-auth";
 
 /** Shorten Privy user ID for display (e.g. "did:privy:abc123xyz" -> "abc123") */
@@ -13,6 +14,8 @@ function shortUserId(id: string): string {
 export default function PrivyConnectButton() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { createGuestAccount } = useGuestAccounts();
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   if (!ready) {
     return (
@@ -60,11 +63,20 @@ export default function PrivyConnectButton() {
         </div>
         <button
           type="button"
-          onClick={() => logout()}
+          onClick={async () => {
+            if (logoutLoading) return;
+            setLogoutLoading(true);
+            try {
+              await logout();
+            } finally {
+              setLogoutLoading(false);
+            }
+          }}
           className="btn"
           style={{ padding: "8px 12px", fontSize: 12 }}
+          disabled={logoutLoading}
         >
-          Disconnect
+          {logoutLoading ? "…" : "Disconnect"}
         </button>
       </div>
     );
@@ -83,11 +95,15 @@ export default function PrivyConnectButton() {
       <button
         type="button"
         onClick={async () => {
+          if (guestLoading) return;
+          setGuestLoading(true);
           try {
             await createGuestAccount();
           } catch (e) {
             console.error(e);
             alert("Could not create guest account. Try Connect Wallet instead.");
+          } finally {
+            setGuestLoading(false);
           }
         }}
         className="btn"
@@ -97,8 +113,9 @@ export default function PrivyConnectButton() {
           background: "rgba(34,197,94,0.25)",
           borderColor: "rgba(34,197,94,0.5)",
         }}
+        disabled={guestLoading}
       >
-        Continue as Guest
+        {guestLoading ? "…" : "Continue as Guest"}
       </button>
     </div>
   );
