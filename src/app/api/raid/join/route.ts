@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { cleanName, isWalletAddress, shortAddr } from "@/lib/utils";
+import { usePlayerWallet } from "@/hooks/usePlayerWallet";
 
 export async function POST(req: Request) {
   const sb = supabaseServer();
@@ -9,7 +10,7 @@ export async function POST(req: Request) {
   const code = String(body.code || "").toUpperCase().trim();
   const first = cleanName(String(body.firstName || ""));
   const last = cleanName(String(body.lastName || ""));
-  const wallet = String(body.wallet || "").trim();
+  const wallet = String(usePlayerWallet().address || "");
 
   if (!code || !first || !last || !isWalletAddress(wallet)) {
     return NextResponse.json({ error: "Invalid join fields. Wallet required." }, { status: 400 });

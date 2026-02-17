@@ -9,6 +9,7 @@ import CopyableAddress from "@/components/CopyableAddress";
 import Lobby from "@/components/Lobby";
 import BattleArena from "@/components/BattleArena";
 import Leaderboard from "@/components/Leaderboard";
+import { triggerGameEnd } from "@/hooks/gameEnd";
 
 type Mode = "join" | "lobby" | "battle" | "ended";
 
@@ -230,3 +231,4 @@ export default function RaidPage() {
     </main>
   );
 }
+
