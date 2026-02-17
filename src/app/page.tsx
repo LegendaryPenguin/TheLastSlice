@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import PizzaAuth from "@/components/PizzaAuth";
+
 
 export default function HomePage() {
   const [code, setCode] = useState("");
@@ -13,6 +15,7 @@ export default function HomePage() {
       <p style={{ opacity: 0.8, marginBottom: 20 }}>
         Create a room or join with a code.
       </p>
+      <PizzaAuth />
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         <button

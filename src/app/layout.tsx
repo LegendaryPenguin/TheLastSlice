@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import "./globals.css";
 import { Press_Start_2P } from "next/font/google";
+import PrivyProviderWrapper from "@/components/PrivyProviderWrapper";
 
 const press = Press_Start_2P({
   weight: "400",
@@ -20,7 +21,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={press.className}>{children}</body>
+      <body className={press.className}>
+        <PrivyProviderWrapper>
+          {children}
+        </PrivyProviderWrapper>
+      </body>
     </html>
   );
 }

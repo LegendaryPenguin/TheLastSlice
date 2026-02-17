@@ -1,9 +1,6 @@
 {
   "app": {
-    "[project]/src/app/host/page": [
-      "static/media/de161955856a921d-s.p.25da2b95.woff2"
-    ],
-    "[project]/src/app/raid/[code]/page": [
+    "[project]/src/app/page": [
       "static/media/de161955856a921d-s.p.25da2b95.woff2"
     ]
   },
