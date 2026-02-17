@@ -31,20 +31,13 @@ export default function BattleArena({
   const [shake, setShake] = useState(false);
   const [flashBoss, setFlashBoss] = useState(false);
 
-  // ✅ NEW: a ticking clock so countdown updates in realtime
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 250);
-    return () => clearInterval(id);
-  }, []);
-
   const [localEnergy, setLocalEnergy] = useState<number>(player?.energy ?? 100);
 
   useEffect(() => {
     setLocalEnergy(player?.energy ?? 100);
   }, [player?.energy]);
 
-  // Smooth regen animation
+  // Smooth regen animation (client-only UI)
   useEffect(() => {
     const id = setInterval(() => {
       setLocalEnergy((e) => clamp(e + 2, 0, 100));
@@ -59,25 +52,22 @@ export default function BattleArena({
 
   const latestAttack = attacks?.[0] ?? null;
 
-  // ✅ UPDATED: depends on `now` so it ticks down
   const endsIn = useMemo(() => {
     if (!raid?.ends_at) return null;
-    const ms = new Date(raid.ends_at).getTime() - now;
+    const ms = new Date(raid.ends_at).getTime() - Date.now();
     return Math.max(0, Math.floor(ms / 1000));
-  }, [raid?.ends_at, now]);
+  }, [raid?.ends_at]);
 
-  // Deduplicate attacks (fix React key warning + realtime duplication)
+  // Deduplicate attacks
   const attacksDeduped = useMemo(() => {
     const seen = new Set<string>();
     const out: any[] = [];
-
     for (const a of attacks ?? []) {
       const k = String(a.id);
       if (seen.has(k)) continue;
       seen.add(k);
       out.push(a);
     }
-
     return out;
   }, [attacks]);
 
@@ -113,6 +103,35 @@ export default function BattleArena({
     } catch {}
   }
 
+  /**
+   * ✅ Synced "Raid Starting" countdown using started_at.
+   * Everyone sees the same countdown because it’s based on server time stored in DB.
+   */
+  const [nowTick, setNowTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setNowTick((x) => x + 1), 200);
+    return () => clearInterval(id);
+  }, []);
+
+  const startOverlay = useMemo(() => {
+    if (!raid?.started_at) return { show: false, phase: "none" as const, n: 0 };
+    const t0 = new Date(raid.started_at).getTime();
+    const dt = Date.now() - t0;
+
+    // Countdown window: first 3000ms
+    if (dt < 3000) {
+      const remaining = 3 - Math.floor(dt / 1000); // 3,2,1
+      return { show: true, phase: "countdown" as const, n: clamp(remaining, 1, 3) };
+    }
+
+    // Boss intro window: next 1200ms
+    if (dt >= 3000 && dt < 4200) {
+      return { show: true, phase: "boss" as const, n: 0 };
+    }
+
+    return { show: false, phase: "none" as const, n: 0 };
+  }, [raid?.started_at, nowTick]);
+
   return (
     <div className="grid2">
       {/* LEFT — BATTLE */}
@@ -120,6 +139,83 @@ export default function BattleArena({
         <div className="battleField">
           <div className="bgBands" />
           <div className="bgScanlines" />
+
+          {/* ✅ START OVERLAY (countdown + boss intro) */}
+          <AnimatePresence>
+            {startOverlay.show && (
+              <motion.div
+                key={startOverlay.phase}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 10,
+                  display: "grid",
+                  placeItems: "center",
+                  pointerEvents: "none",
+                  background: "radial-gradient(700px 280px at 50% 40%, rgba(139,92,246,0.25), rgba(0,0,0,0.55))",
+                }}
+              >
+                {startOverlay.phase === "countdown" ? (
+                  <div
+                    style={{
+                      display: "grid",
+                      placeItems: "center",
+                      gap: 10,
+                      textAlign: "center",
+                      padding: 18,
+                      borderRadius: 18,
+                      border: "1px solid rgba(255,255,255,0.14)",
+                      background: "rgba(0,0,0,0.35)",
+                      boxShadow: "0 18px 48px rgba(0,0,0,0.55)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  >
+                    <div style={{ opacity: 0.8, letterSpacing: 2, fontWeight: 900 }}>
+                      RAID STARTING
+                    </div>
+                    <motion.div
+                      key={startOverlay.n}
+                      initial={{ scale: 0.85, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.18 }}
+                      style={{
+                        fontSize: 74,
+                        fontWeight: 900,
+                        letterSpacing: 2,
+                        textShadow: "0 10px 30px rgba(0,0,0,0.55)",
+                      }}
+                    >
+                      {startOverlay.n}
+                    </motion.div>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "grid",
+                      placeItems: "center",
+                      gap: 12,
+                      textAlign: "center",
+                      padding: 18,
+                      borderRadius: 18,
+                      border: "1px solid rgba(255,255,255,0.14)",
+                      background: "rgba(0,0,0,0.35)",
+                      boxShadow: "0 18px 48px rgba(0,0,0,0.55)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  >
+                    <div style={{ fontSize: 44 }}>🍍🍕</div>
+                    <div style={{ fontWeight: 900, letterSpacing: 1 }}>
+                      PINEAPPLE TITAN APPEARS
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Enemy HUD */}
           <div className="hud enemyHud">

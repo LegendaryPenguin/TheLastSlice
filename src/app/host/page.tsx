@@ -10,6 +10,7 @@ export default function HostPage() {
 
   const raidUrl = useMemo(() => {
     if (!raid?.code) return "";
+    if (typeof window === "undefined") return "";
     return `${window.location.origin}/raid/${raid.code}`;
   }, [raid]);
 
@@ -17,32 +18,21 @@ export default function HostPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/raid/create", { method: "POST" });
-      const text = await res.text();
-
-      // helpful debugging
-      console.log("create raid:", res.status, text);
-
-      let json: any = {};
-      try {
-        json = JSON.parse(text);
-      } catch {
-        // non-json response
-      }
+      const json = await res.json();
 
       setLoading(false);
 
       if (!res.ok || json?.error) {
-        return alert(json?.error || text || "Create raid failed.");
+        return alert(json?.error || "Create raid failed.");
       }
 
       setRaid(json.raid);
 
-      // auto navigate host to the raid room
-      router.push(`/raid/${json.raid.code}`);
+      // ✅ IMPORTANT: host must go to host lobby route, not player route
+      router.push(`/host/${json.raid.code}`);
     } catch (e: any) {
       setLoading(false);
-      console.error(e);
-      alert(e?.message || "Create raid failed (see console).");
+      alert(e?.message || "Create raid failed.");
     }
   }
 

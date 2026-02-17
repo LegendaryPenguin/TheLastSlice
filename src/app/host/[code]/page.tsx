@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { pickFourRandomMoves } from "@/lib/moves";
@@ -12,6 +12,7 @@ type Mode = "join" | "lobby" | "battle" | "ended";
 
 export default function HostRoomPage() {
   const params = useParams<{ code: string }>();
+  const router = useRouter();
   const code = (params?.code ?? "ENTER").toString().toUpperCase();
 
   const [mode, setMode] = useState<Mode>("join");
@@ -22,7 +23,6 @@ export default function HostRoomPage() {
 
   const [moveSet, setMoveSet] = useState(() => pickFourRandomMoves());
 
-  // Load saved player for this raid (host can refresh and still be the same player)
   useEffect(() => {
     if (!code || code === "ENTER") return;
 
@@ -51,14 +51,12 @@ export default function HostRoomPage() {
     setAttacks(json.attacks);
   }
 
-  // Initial fetch
   useEffect(() => {
     if (!code || code === "ENTER") return;
     refreshState();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
-  // Realtime
   useEffect(() => {
     if (!raid?.id) return;
 
@@ -76,7 +74,6 @@ export default function HostRoomPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "players", filter: `raid_id=eq.${raid.id}` },
         async () => {
-          // keep ordered list correct
           const res = await fetch("/api/raid/state", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -128,7 +125,9 @@ export default function HostRoomPage() {
     if (json.error) return alert(json.error);
 
     setRaid(json.raid);
-    setMode("battle");
+
+    // Host should PLAY after starting:
+    router.push(`/raid/${code}`);
   }
 
   async function doAttack(moveId: number) {
@@ -146,7 +145,6 @@ export default function HostRoomPage() {
     setMoveSet(pickFourRandomMoves());
   }
 
-  // Mode switching
   useEffect(() => {
     if (!raid) return;
 
@@ -183,7 +181,7 @@ export default function HostRoomPage() {
           players={players}
           onJoin={joinRaid}
           onStart={startRaid}
-          canStart={true} // ✅ only host page shows Start
+          isHost={true}   // ✅ THIS is the missing piece
         />
       )}
 
@@ -196,7 +194,7 @@ export default function HostRoomPage() {
           players={players}
           onJoin={joinRaid}
           onStart={startRaid}
-          canStart={true} // ✅ only host page shows Start
+          isHost={true}   // ✅ THIS is the missing piece
         />
       )}
 
