@@ -17,7 +17,8 @@ export type Player = {
   raid_id: string;
   first_name: string;
   last_name: string;
-  tag: string;
+  tag?: string;
+  wallet?: string;
   display_name: string;
   total_damage: number;
   energy: number;

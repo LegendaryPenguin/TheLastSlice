@@ -1,9 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useWallets } from "@privy-io/react-auth";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { pickFourRandomMoves } from "@/lib/moves";
+import CopyableAddress from "@/components/CopyableAddress";
 import Lobby from "@/components/Lobby";
 import BattleArena from "@/components/BattleArena";
 import Leaderboard from "@/components/Leaderboard";
@@ -13,6 +15,8 @@ type Mode = "join" | "lobby" | "battle" | "ended";
 export default function RaidPage() {
   const params = useParams<{ code: string }>();
   const code = (params?.code ?? "ENTER").toString().toUpperCase();
+  const { wallets } = useWallets();
+  const walletAddress = wallets.find((w) => w.walletClientType === "privy")?.address ?? null;
 
   const [mode, setMode] = useState<Mode>("join");
   const [raid, setRaid] = useState<any>(null);
@@ -101,11 +105,11 @@ export default function RaidPage() {
     };
   }, [raid?.id, code]);
 
-  async function joinRaid(firstName: string, lastName: string, tag: string) {
+  async function joinRaid(firstName: string, lastName: string, wallet: string) {
     const res = await fetch("/api/raid/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, firstName, lastName, tag }),
+      body: JSON.stringify({ code, firstName, lastName, wallet }),
     });
     const json = await res.json();
     if (json.error) return alert(json.error);
@@ -167,7 +171,10 @@ export default function RaidPage() {
           )}
         </div>
 
-        <div className="raidRight">
+        <div className="raidRight" style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          {walletAddress && (
+            <CopyableAddress address={walletAddress} label="wallet" />
+          )}
           <button
             className="btn"
             onClick={() => {
@@ -186,6 +193,7 @@ export default function RaidPage() {
           raid={raid}
           player={player}
           players={players}
+          walletAddress={walletAddress}
           onJoin={joinRaid}
           onStart={startBattle}
           isHost={true}
@@ -199,6 +207,7 @@ export default function RaidPage() {
           raid={raid}
           player={player}
           players={players}
+          walletAddress={walletAddress}
           onJoin={joinRaid}
           onStart={startBattle}
           isHost={true}

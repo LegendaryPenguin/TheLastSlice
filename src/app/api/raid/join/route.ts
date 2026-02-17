@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { cleanName, isFiveDigits } from "@/lib/utils";
+import { cleanName, isWalletAddress, shortAddr } from "@/lib/utils";
 
 export async function POST(req: Request) {
   const sb = supabaseServer();
@@ -9,13 +9,13 @@ export async function POST(req: Request) {
   const code = String(body.code || "").toUpperCase().trim();
   const first = cleanName(String(body.firstName || ""));
   const last = cleanName(String(body.lastName || ""));
-  const tag = String(body.tag || "").trim();
+  const wallet = String(body.wallet || "").trim();
 
-  if (!code || !first || !last || !isFiveDigits(tag)) {
-    return NextResponse.json({ error: "Invalid join fields." }, { status: 400 });
+  if (!code || !first || !last || !isWalletAddress(wallet)) {
+    return NextResponse.json({ error: "Invalid join fields. Wallet required." }, { status: 400 });
   }
 
-  const displayName = `${first} ${last} #${tag}`;
+  const displayName = `${first} ${last} #${shortAddr(wallet)}`;
 
   const { data: raid, error: raidErr } = await sb
     .from("raids")
@@ -28,9 +28,20 @@ export async function POST(req: Request) {
   }
 
   if (raid.status === "ended") {
-  return NextResponse.json({ error: "Raid already ended." }, { status: 409 });
-}
+    return NextResponse.json({ error: "Raid already ended." }, { status: 409 });
+  }
 
+  // Check for duplicate wallet in this raid (stored in tag column)
+  const { data: existing } = await sb
+    .from("players")
+    .select("id")
+    .eq("raid_id", raid.id)
+    .eq("tag", wallet)
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json({ error: "This wallet already joined this raid." }, { status: 409 });
+  }
 
   const { data: player, error: pErr } = await sb
     .from("players")
@@ -38,7 +49,7 @@ export async function POST(req: Request) {
       raid_id: raid.id,
       first_name: first,
       last_name: last,
-      tag,
+      tag: wallet,
       display_name: displayName,
       energy: 100,
     })
@@ -49,5 +60,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: pErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ raid, player });
+  // Attach wallet for frontend (stored in tag column)
+  const playerWithWallet = { ...player, wallet: player.tag };
+
+  return NextResponse.json({ raid, player: playerWithWallet });
 }

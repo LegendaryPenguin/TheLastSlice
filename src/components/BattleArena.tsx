@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Move } from "@/lib/moves";
 import { clamp } from "@/lib/utils";
+import CopyableAddress from "@/components/CopyableAddress";
 
 function hpColor(pct: number) {
   if (pct > 0.5) return "#22c55e";
@@ -158,6 +159,9 @@ export default function BattleArena({
             <div className="hudTop">
               <div>
                 <div className="hudTitle">{player?.display_name ?? "You"}</div>
+                {player?.wallet && (
+                  <CopyableAddress address={player.wallet} style={{ marginTop: 4, padding: "4px 8px", fontSize: 11 }} />
+                )}
                 <div className="hudSub">ENERGY</div>
               </div>
               <div className="hudSub">Players: {players.length}</div>
