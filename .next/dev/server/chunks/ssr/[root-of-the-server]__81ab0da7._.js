@@ -513,12 +513,13 @@ function hpColor(pct) {
 function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) {
     const [shake, setShake] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [flashBoss, setFlashBoss] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
-    // Local UI energy (server is authoritative; this is just smooth UX)
     const [localEnergy, setLocalEnergy] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(player?.energy ?? 100);
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>setLocalEnergy(player?.energy ?? 100), [
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        setLocalEnergy(player?.energy ?? 100);
+    }, [
         player?.energy
     ]);
-    // Smooth regen animation for the bar (does NOT change server energy)
+    // Smooth regen animation
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         const id = setInterval(()=>{
             setLocalEnergy((e)=>(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["clamp"])(e + 2, 0, 100));
@@ -537,11 +538,23 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
         const ms = new Date(raid.ends_at).getTime() - Date.now();
         return Math.max(0, Math.floor(ms / 1000));
     }, [
-        raid?.ends_at,
-        raid?.boss_hp,
-        raid?.status
+        raid?.ends_at
     ]);
-    // Boss reaction when a new attack arrives
+    // Deduplicate attacks (fix React key warning + realtime duplication)
+    const attacksDeduped = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
+        const seen = new Set();
+        const out = [];
+        for (const a of attacks ?? []){
+            const k = String(a.id);
+            if (seen.has(k)) continue;
+            seen.add(k);
+            out.push(a);
+        }
+        return out;
+    }, [
+        attacks
+    ]);
+    // Boss reaction animation
     const lastAttackId = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (!latestAttack?.id) return;
@@ -560,19 +573,14 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
     ]);
     async function doMove(m) {
         if (!player) return;
-        // optimistic local drop for snappy feel
+        // optimistic energy drop
         setLocalEnergy((e)=>Math.max(0, e - m.cost));
         try {
             await onAttack(m.id);
-        } catch  {
-        // if attack fails, UI will correct on next refresh
-        }
+        } catch  {}
     }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "grid2",
-        style: {
-            gridTemplateColumns: "1.4fr 1fr"
-        },
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: `battleShell ${shake ? "shake" : ""}`,
@@ -583,14 +591,14 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                             className: "bgBands"
                         }, void 0, false, {
                             fileName: "[project]/src/components/BattleArena.tsx",
-                            lineNumber: 94,
+                            lineNumber: 115,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "bgScanlines"
                         }, void 0, false, {
                             fileName: "[project]/src/components/BattleArena.tsx",
-                            lineNumber: 95,
+                            lineNumber: 116,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -606,7 +614,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                     children: raid?.boss_name ?? "Boss"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                                    lineNumber: 101,
+                                                    lineNumber: 122,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -614,13 +622,13 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                     children: "RAID BOSS"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                                    lineNumber: 102,
+                                                    lineNumber: 125,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 100,
+                                            lineNumber: 121,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -632,13 +640,13 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 104,
+                                            lineNumber: 128,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 99,
+                                    lineNumber: 120,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -649,7 +657,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                             children: "HP"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 108,
+                                            lineNumber: 132,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -662,18 +670,18 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/BattleArena.tsx",
-                                                lineNumber: 110,
+                                                lineNumber: 135,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 109,
+                                            lineNumber: 134,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 107,
+                                    lineNumber: 131,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -688,13 +696,13 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 120,
+                                    lineNumber: 145,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/BattleArena.tsx",
-                            lineNumber: 98,
+                            lineNumber: 119,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["motion"].div, {
@@ -711,7 +719,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                     children: "🍍🍕"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 131,
+                                    lineNumber: 156,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -719,13 +727,13 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                     children: "PINEAPPLE TITAN"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 132,
+                                    lineNumber: 157,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/BattleArena.tsx",
-                            lineNumber: 126,
+                            lineNumber: 151,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -750,13 +758,14 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                     className: "atkLabel",
                                     children: [
                                         latestAttack.player_name,
-                                        " used ",
+                                        " used",
+                                        " ",
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
                                             children: latestAttack.move_name
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 147,
-                                            columnNumber: 51
+                                            lineNumber: 175,
+                                            columnNumber: 19
                                         }, this),
                                         " ",
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -769,23 +778,23 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 148,
+                                            lineNumber: 176,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 146,
+                                    lineNumber: 173,
                                     columnNumber: 17
                                 }, this)
                             }, latestAttack.id, false, {
                                 fileName: "[project]/src/components/BattleArena.tsx",
-                                lineNumber: 138,
+                                lineNumber: 165,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/BattleArena.tsx",
-                            lineNumber: 136,
+                            lineNumber: 163,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -801,7 +810,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                     children: player?.display_name ?? "You"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                                    lineNumber: 160,
+                                                    lineNumber: 193,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -809,13 +818,13 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                     children: "ENERGY"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                                    lineNumber: 161,
+                                                    lineNumber: 196,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 159,
+                                            lineNumber: 192,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -826,13 +835,13 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 163,
+                                            lineNumber: 199,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 158,
+                                    lineNumber: 191,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -843,7 +852,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                             children: "EN"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 167,
+                                            lineNumber: 205,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -856,18 +865,18 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/BattleArena.tsx",
-                                                lineNumber: 169,
+                                                lineNumber: 208,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 168,
+                                            lineNumber: 207,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 166,
+                                    lineNumber: 204,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -875,10 +884,10 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                     style: {
                                         marginTop: 10
                                     },
-                                    children: "Choose 1 of 4 random attacks (costs energy)"
+                                    children: "Choose 1 of 4 random attacks"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 179,
+                                    lineNumber: 218,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -894,7 +903,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                     children: m.name
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                                    lineNumber: 192,
+                                                    lineNumber: 235,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -907,7 +916,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                                            lineNumber: 194,
+                                                            lineNumber: 238,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -919,45 +928,45 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                                            lineNumber: 195,
+                                                            lineNumber: 239,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                                    lineNumber: 193,
+                                                    lineNumber: 237,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, m.id, true, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 185,
+                                            lineNumber: 224,
                                             columnNumber: 17
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 183,
+                                    lineNumber: 222,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/BattleArena.tsx",
-                            lineNumber: 157,
+                            lineNumber: 190,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/BattleArena.tsx",
-                    lineNumber: 93,
+                    lineNumber: 114,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/BattleArena.tsx",
-                lineNumber: 92,
+                lineNumber: 113,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "card",
+                className: "card cardCol",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                         style: {
@@ -966,13 +975,13 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                         children: "Live Attacks"
                     }, void 0, false, {
                         fileName: "[project]/src/components/BattleArena.tsx",
-                        lineNumber: 208,
+                        lineNumber: 252,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "attackFeed",
                         children: [
-                            attacks.slice(0, 200).map((a)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            attacksDeduped.slice(0, 200).map((a)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "attackRow",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -980,7 +989,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                             children: a.player_name
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 213,
+                                            lineNumber: 260,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -988,7 +997,7 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                             children: a.move_name
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 214,
+                                            lineNumber: 264,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -999,27 +1008,27 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/BattleArena.tsx",
-                                            lineNumber: 215,
+                                            lineNumber: 268,
                                             columnNumber: 15
                                         }, this)
                                     ]
-                                }, a.id, true, {
+                                }, `${a.id}-${a.created_at ?? ""}`, true, {
                                     fileName: "[project]/src/components/BattleArena.tsx",
-                                    lineNumber: 212,
+                                    lineNumber: 256,
                                     columnNumber: 13
                                 }, this)),
-                            (!attacks || attacks.length === 0) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            attacksDeduped.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "muted",
                                 children: "No attacks yet."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/BattleArena.tsx",
-                                lineNumber: 220,
+                                lineNumber: 279,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/BattleArena.tsx",
-                        lineNumber: 210,
+                        lineNumber: 254,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1033,26 +1042,26 @@ function BattleArena({ code, raid, player, players, attacks, moves, onAttack }) 
                                 children: code
                             }, void 0, false, {
                                 fileName: "[project]/src/components/BattleArena.tsx",
-                                lineNumber: 225,
+                                lineNumber: 286,
                                 columnNumber: 17
                             }, this),
-                            " — Boss HP updates live (when Realtime is enabled)."
+                            " — Boss HP updates live."
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/BattleArena.tsx",
-                        lineNumber: 224,
+                        lineNumber: 285,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/BattleArena.tsx",
-                lineNumber: 207,
+                lineNumber: 251,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/BattleArena.tsx",
-        lineNumber: 90,
+        lineNumber: 111,
         columnNumber: 5
     }, this);
 }
@@ -1333,6 +1342,7 @@ function RaidPage() {
             filter: `raid_id=eq.${raid.id}`
         }, (payload)=>{
             const atk = payload.new;
+            // prepend + cap
             setAttacks((prev)=>[
                     atk,
                     ...prev
@@ -1410,11 +1420,7 @@ function RaidPage() {
         player
     ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
-        style: {
-            maxWidth: 1200,
-            margin: "0 auto",
-            padding: 16
-        },
+        className: "pageShell",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "raidTop",
@@ -1429,7 +1435,7 @@ function RaidPage() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                lineNumber: 162,
+                                lineNumber: 163,
                                 columnNumber: 11
                             }, this),
                             raid && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1440,7 +1446,7 @@ function RaidPage() {
                                         children: raid.boss_name
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                        lineNumber: 165,
+                                        lineNumber: 166,
                                         columnNumber: 21
                                     }, this),
                                     " — Status: ",
@@ -1448,19 +1454,19 @@ function RaidPage() {
                                         children: raid.status
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                        lineNumber: 165,
+                                        lineNumber: 166,
                                         columnNumber: 55
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                lineNumber: 164,
+                                lineNumber: 165,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/raid/[code]/page.tsx",
-                        lineNumber: 161,
+                        lineNumber: 162,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1473,18 +1479,18 @@ function RaidPage() {
                             children: "Refresh"
                         }, void 0, false, {
                             fileName: "[project]/src/app/raid/[code]/page.tsx",
-                            lineNumber: 171,
+                            lineNumber: 172,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/raid/[code]/page.tsx",
-                        lineNumber: 170,
+                        lineNumber: 171,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 160,
+                lineNumber: 161,
                 columnNumber: 7
             }, this),
             mode === "join" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Lobby$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -1498,7 +1504,7 @@ function RaidPage() {
                 isHost: true
             }, void 0, false, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 183,
+                lineNumber: 184,
                 columnNumber: 9
             }, this),
             mode === "lobby" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Lobby$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -1512,7 +1518,7 @@ function RaidPage() {
                 isHost: true
             }, void 0, false, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 196,
+                lineNumber: 197,
                 columnNumber: 9
             }, this),
             mode === "battle" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$BattleArena$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -1525,7 +1531,7 @@ function RaidPage() {
                 onAttack: doAttack
             }, void 0, false, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 209,
+                lineNumber: 210,
                 columnNumber: 9
             }, this),
             mode === "ended" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Leaderboard$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -1533,13 +1539,13 @@ function RaidPage() {
                 players: players
             }, void 0, false, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 220,
+                lineNumber: 221,
                 columnNumber: 28
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/raid/[code]/page.tsx",
-        lineNumber: 159,
+        lineNumber: 160,
         columnNumber: 5
     }, this);
 }

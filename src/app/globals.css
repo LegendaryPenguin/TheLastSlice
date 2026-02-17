@@ -9,16 +9,19 @@
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
+
 body {
   margin: 0;
-  background: radial-gradient(900px 500px at 40% 10%, rgba(139,92,246,0.25), transparent 60%),
-              radial-gradient(900px 500px at 80% 30%, rgba(34,197,94,0.18), transparent 60%),
-              var(--bg);
+  background:
+    radial-gradient(900px 500px at 40% 10%, rgba(139,92,246,0.25), transparent 60%),
+    radial-gradient(900px 500px at 80% 30%, rgba(34,197,94,0.18), transparent 60%),
+    var(--bg);
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;
 }
 
 a { color: inherit; text-decoration: none; }
+
 input {
   width: 100%;
   padding: 12px 12px;
@@ -29,6 +32,9 @@ input {
   outline: none;
 }
 
+.muted { color: var(--muted); }
+
+/* Buttons */
 .btn, .btnPrimary{
   border-radius: 14px;
   padding: 12px 16px;
@@ -37,14 +43,16 @@ input {
   box-shadow: 0 10px 24px rgba(0,0,0,0.35);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
 }
 .btnPrimary{
   background: linear-gradient(180deg, rgba(168,85,247,0.95), rgba(88,28,135,0.85));
 }
 .btn:hover, .btnPrimary:hover{ transform: translateY(-1px); }
-
 .btn:disabled, .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
 
+/* Cards */
 .card {
   border: 1px solid var(--stroke);
   background: var(--card);
@@ -53,25 +61,7 @@ input {
   backdrop-filter: blur(10px);
 }
 
-.attackFeed{
-  display: grid;
-  gap: 8px;
-  max-height: 620px;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
-.grid2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-@media (max-width: 980px) {
-  .grid2 { grid-template-columns: 1fr; }
-}
-
-.muted { color: var(--muted); }
-
+/* Header */
 .raidTop {
   display: flex;
   align-items: flex-end;
@@ -82,18 +72,62 @@ input {
 .raidTitle { font-size: 22px; font-weight: 800; }
 .raidSub { color: var(--muted); margin-top: 4px; font-size: 13px; }
 
-/* Battle area */
+/* ===== Responsive layout (single source of truth) ===== */
+.grid2 {
+  display: grid;
+  gap: 16px;
+}
+
+/* Desktop/tablet: 2 columns */
+@media (min-width: 980px) {
+  .grid2 {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: stretch;
+  }
+
+  .battleShell,
+  .card {
+    height: calc(100vh - 140px); /* subtract header-ish area */
+    min-height: 680px;
+    max-height: 900px;
+  }
+}
+
+/* Mobile: stack */
+@media (max-width: 979px) {
+  .grid2 { grid-template-columns: 1fr; }
+
+  .battleShell,
+  .card {
+    height: auto;
+    min-height: auto;
+    max-height: none;
+  }
+}
+
+/* ===== Battle area ===== */
 .battleShell { border-radius: 16px; overflow: hidden; }
+
 .battleField {
   position: relative;
-  height: 520px;
+  height: 100%;
   border: 1px solid var(--stroke);
   border-radius: 16px;
   overflow: hidden;
   background: linear-gradient(180deg, rgba(130,255,210,0.25), rgba(0,0,0,0.35));
+  display: grid;
+  grid-template-rows: auto 1fr auto; /* enemy HUD / boss / player HUD */
+  padding: 16px;
 }
+
+/* Background layers behind everything */
+.bgBands, .bgScanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 .bgBands {
-  position: absolute; inset: 0;
   background: linear-gradient(180deg,
     rgba(255,255,255,0.10) 0%,
     rgba(255,255,255,0.04) 25%,
@@ -102,8 +136,8 @@ input {
     rgba(255,255,255,0.03) 100%);
   opacity: 0.9;
 }
+
 .bgScanlines {
-  position: absolute; inset: 0;
   background: repeating-linear-gradient(
     180deg,
     rgba(0,0,0,0.10) 0px,
@@ -115,8 +149,14 @@ input {
   opacity: 0.25;
 }
 
+/* ensure content is above bg layers */
+.battleField > :not(.bgBands):not(.bgScanlines) {
+  position: relative;
+  z-index: 2;
+}
+
+/* HUD blocks (NOT absolute) */
 .hud {
-  position: absolute;
   width: min(520px, 92%);
   background: rgba(255,255,255,0.82);
   color: rgba(0,0,0,0.88);
@@ -124,8 +164,9 @@ input {
   padding: 12px;
   border: 1px solid rgba(0,0,0,0.12);
 }
-.enemyHud { top: 14px; left: 14px; }
-.playerHud { bottom: 14px; left: 14px; }
+
+.enemyHud { grid-row: 1; z-index: 5; }
+.playerHud { grid-row: 3; z-index: 5; }
 
 .hudTop { display: flex; justify-content: space-between; gap: 10px; }
 .hudTitle { font-weight: 900; font-size: 14px; }
@@ -153,19 +194,24 @@ input {
   transition: width 550ms ease;
 }
 
+/* Boss stays centered in middle row */
 .boss {
-  position: absolute;
-  inset: 0;
+  grid-row: 2;
+  align-self: center;
+  justify-self: center;
+  z-index: 3;
   display:flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
+
 .bossSprite {
   font-size: 84px;
   filter: drop-shadow(0 12px 0 rgba(0,0,0,0.25));
 }
+
 .bossNameplate {
   padding: 8px 12px;
   border-radius: 999px;
@@ -190,12 +236,18 @@ input {
   100% { transform: translate(0,0); }
 }
 
+/* Moves */
 .moveGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 10px;
 }
+
+@media (max-width: 520px) {
+  .moveGrid { grid-template-columns: 1fr; }
+}
+
 .moveBtn {
   border-radius: 12px;
   border: 1px solid rgba(0,0,0,0.15);
@@ -208,7 +260,23 @@ input {
 .moveName { font-weight: 900; font-size: 13px; }
 .moveMeta { display:flex; justify-content: space-between; margin-top: 6px; font-size: 11px; opacity: 0.8; }
 
-.attackFeed { display: grid; gap: 8px; }
+/* ===== Right panel: scrolling feed fills height ===== */
+.cardCol {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0; /* important for nested scroll */
+}
+
+.attackFeed {
+  display: grid;
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 6px;
+  flex: 1;
+  min-height: 0;
+}
+
 .attackRow {
   display: grid;
   grid-template-columns: 1.3fr 1.2fr 0.5fr;
@@ -218,49 +286,13 @@ input {
   border: 1px solid var(--stroke);
   background: rgba(0,0,0,0.18);
 }
+
 .attackName { font-weight: 800; }
 .attackMove { opacity: 0.85; }
 .attackDmg { font-weight: 900; text-align: right; }
 .attackDmg.crit { color: #ff71ff; }
 
-.floatDmg {
-  position: absolute;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: rgba(0,0,0,0.35);
-  font-weight: 900;
-}
-.floatDmg.crit { color: #ff71ff; }
-
-.leaderboard { margin-top: 12px; }
-.lbHead, .lbRow {
-  display: grid;
-  grid-template-columns: 60px 1.4fr 0.8fr 0.8fr;
-  gap: 10px;
-  padding: 10px;
-}
-.lbHead { opacity: 0.8; font-weight: 900; }
-.lbRow {
-  border-top: 1px solid var(--stroke);
-}
-.lbRank { font-weight: 900; }
-.lbName { font-weight: 800; }
-.lbDmg { font-variant-numeric: tabular-nums; }
-.lbReward { font-variant-numeric: tabular-nums; text-align: right; }
-
-.form { display: grid; gap: 10px; margin-top: 12px; }
-.pill {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--stroke);
-  background: rgba(0,0,0,0.18);
-}
-.list { display: grid; gap: 8px; margin-top: 10px; }
-.row { display:flex; justify-content: space-between; gap: 10px; }
-.name { font-weight: 800; }
-
+/* Attack FX overlay */
 .atkFx {
   position: absolute;
   inset: 0;
@@ -268,6 +300,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 4;
 }
 
 .atkLabel{
@@ -327,7 +360,117 @@ input {
   animation: fxIn 0.35s ease;
 }
 
-@keyframes fxIn { from {opacity:0; transform: rotate(-18deg) scaleX(0.6);} to {opacity:1; transform: rotate(-18deg) scaleX(1);} }
-@keyframes fxPop { from {opacity:0; transform: scale(0.7);} to {opacity:1; transform: scale(1);} }
-@keyframes fxZap { from {opacity:0; transform: scaleX(0.4);} to {opacity:1; transform: scaleX(1);} }
-@keyframes fxMeteor { from {opacity:0; transform: translateY(-200px) scale(0.5);} to {opacity:1; transform: translateY(0) scale(1);} }
+@keyframes fxIn {
+  from { opacity:0; transform: rotate(-18deg) scaleX(0.6); }
+  to { opacity:1; transform: rotate(-18deg) scaleX(1); }
+}
+@keyframes fxPop {
+  from { opacity:0; transform: scale(0.7); }
+  to { opacity:1; transform: scale(1); }
+}
+@keyframes fxZap {
+  from { opacity:0; transform: scaleX(0.4); }
+  to { opacity:1; transform: scaleX(1); }
+}
+@keyframes fxMeteor {
+  from { opacity:0; transform: translateY(-200px) scale(0.5); }
+  to { opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* Leaderboard */
+.leaderboard { margin-top: 12px; }
+.lbHead, .lbRow {
+  display: grid;
+  grid-template-columns: 60px 1.4fr 0.8fr 0.8fr;
+  gap: 10px;
+  padding: 10px;
+}
+.lbHead { opacity: 0.8; font-weight: 900; }
+.lbRow { border-top: 1px solid var(--stroke); }
+.lbRank { font-weight: 900; }
+.lbName { font-weight: 800; }
+.lbDmg { font-variant-numeric: tabular-nums; }
+.lbReward { font-variant-numeric: tabular-nums; text-align: right; }
+
+/* Forms/lists used in lobby */
+.form { display: grid; gap: 10px; margin-top: 12px; }
+.pill {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: rgba(0,0,0,0.18);
+}
+.list { display: grid; gap: 8px; margin-top: 10px; }
+.row { display:flex; justify-content: space-between; gap: 10px; }
+.name { font-weight: 800; }
+
+/* ===== Desktop: lock the content to viewport and keep scrolling inside panels only ===== */
+.pageShell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+@media (min-width: 980px) {
+  html, body {
+    height: 100%;
+    overflow: hidden; /* stop the whole page from scrolling on desktop */
+  }
+
+  .pageShell {
+    height: 100vh; /* lock to viewport */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* top header row + the grid fills remaining height */
+  .grid2 {
+    flex: 1;
+    min-height: 0; /* IMPORTANT: allows children to shrink and scroll internally */
+  }
+}
+
+/* ===== Grid: equal height columns ===== */
+.grid2 {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 980px) {
+  .grid2 {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: stretch;
+  }
+
+  .battleShell,
+  .card {
+    height: 100%;
+    min-height: 0; /* IMPORTANT */
+  }
+}
+
+@media (max-width: 979px) {
+  html, body {
+    overflow: auto; /* allow normal scrolling on mobile */
+  }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Right panel: ONLY the feed scrolls ===== */
+.cardCol {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0; /* IMPORTANT */
+}
+
+.attackFeed {
+  flex: 1;
+  min-height: 0; /* IMPORTANT */
+  overflow-y: auto;
+  padding-right: 6px;
+}

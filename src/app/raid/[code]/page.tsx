@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { pickFourRandomMoves } from "@/lib/moves";
 import Lobby from "@/components/Lobby";
@@ -91,6 +91,7 @@ export default function RaidPage() {
         { event: "INSERT", schema: "public", table: "attacks", filter: `raid_id=eq.${raid.id}` },
         (payload) => {
           const atk = payload.new as any;
+          // prepend + cap
           setAttacks((prev) => [atk, ...prev].slice(0, 200));
         }
       )
@@ -156,7 +157,7 @@ export default function RaidPage() {
   }, [raid, player]);
 
   return (
-    <main style={{ maxWidth: 1200, margin: "0 auto", padding: 16 }}>
+    <main className="pageShell">
       <div className="raidTop">
         <div>
           <div className="raidTitle">🍍🍕 Room {code}</div>

@@ -1,9 +1,11 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/api/raid/attack/route": "app/api/raid/attack/route.js",
   "/api/raid/create/route": "app/api/raid/create/route.js",
   "/api/raid/join/route": "app/api/raid/join/route.js",
   "/api/raid/start/route": "app/api/raid/start/route.js",
   "/api/raid/state/route": "app/api/raid/state/route.js",
   "/host/page": "app/host/page.js",
+  "/page": "app/page.js",
   "/raid/[code]/page": "app/raid/[code]/page.js"
 }
