@@ -19,28 +19,20 @@ export default function HomePage() {
     const res = await fetch("/api/raid/create", { method: "POST" });
     const json = await res.json();
     if (!res.ok || json?.error) return alert(json?.error || "Create raid failed.");
-
-    const raid = json.raid;
-
-    // ✅ host only in THIS tab
-    sessionStorage.setItem(`raid:${raid.code}:isHost`, "1");
-
-    router.push(`/raid/${raid.code}`);
+    router.push(`/host/${json.raid.code}`);
   } catch (e: any) {
     alert(e?.message || "Create raid failed.");
   }
 }
 
 
+
 function onJoin() {
   const c = normalizeCode(code);
   if (!c) return;
-
-  // ✅ ensure this tab is NOT host
-  sessionStorage.removeItem(`raid:${c}:isHost`);
-
   router.push(`/raid/${c}`);
 }
+
 
   return (
     <main

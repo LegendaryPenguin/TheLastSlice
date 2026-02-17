@@ -1,15 +1,52 @@
-[00:00:00.979] Server  LOG     ✓ Ready in 698ms
-[00:00:01.894] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:02:25.181] Server  LOG     ✓ Compiled in 135ms
-[00:02:39.713] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:06:48.650] Server  LOG     ✓ Compiled in 357ms
-[00:07:00.374] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:07:04.576] Browser LOG     create raid: 200 {"raid":{"id":"043818cf-9741-4a32-ab9f-5b6f5f027b61","code":"BRLW5N","status":"lobby","boss_name":"Pineapple Pizza Titan","boss_hp":3600,"boss_hp_max":3600,"duration_seconds":60,"started_at":null,"ends_at":null,"created_at":"2026-02-17T21:35:27.638025+00:00"}}
-[00:08:42.350] Server  LOG     ✓ Compiled in 14ms
-[00:08:48.731] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:08:56.170] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:11:10.002] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:11:54.161] Server  LOG     ✓ Compiled in 27ms
-[00:12:04.037] Server  LOG     ✓ Compiled in 20ms
-[00:12:20.196] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:13:32.556] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:01.051] Server  LOG     ✓ Ready in 748ms
+[00:00:07.283] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:18.393] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:37.780] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:03.791] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:05:46.789] Server  LOG     ✓ Compiled in 42ms
+[00:06:46.051] Server  LOG     ✓ Compiled in 217ms
+[00:06:46.479] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./src/app/host/[code]/page.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:06:47.280] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:06:47.963] Browser ERROR   uncaughtError: Error: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/host/EOAZPL" tree={[...]} params={{code:"EOAZPL"}} cacheNode={{rsc:<Fragment>, ...}} ...>
+          <SegmentViewNode type="page" pagePath="host/[code...">
+            <SegmentTrieNode>
+            <ClientPageRoot Component={function HostRoomPage} serverProvidedParams={{...}}>
+              <HostRoomPage params={Promise} searchParams={Promise}>
+                <main className="pageShell">
+                  <div>
+                  <Lobby mode="join" code="EOAZPL" raid={null} player={null} players={[...]} onJoin={function joinRaid} ...>
+                    <div className="grid2">
+                      <div className="card">
+                        <h2>
+                        <p>
+                        <div className="form">
+                          <input>
+                          <input>
+                          <input>
+                          <button>
+                          <div className="pill" style={{marginTop:12}}>
+                            <div style={{opacity:0.85, ...}}>
+                              <b style={{wordBreak:"break-all"}}>
++                               http://localhost:3000/raid/EOAZPL
+-                               
+                      ...
+          ...
+        ...
+
+[00:08:05.625] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:08:34.214] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold

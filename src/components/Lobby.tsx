@@ -10,7 +10,7 @@ export default function Lobby({
   players,
   onJoin,
   onStart,
-  isHost,
+  canStart = false,
 }: {
   mode: "join" | "lobby";
   code: string;
@@ -18,41 +18,23 @@ export default function Lobby({
   player: any;
   players: any[];
   onJoin: (f: string, l: string, t: string) => void;
-  onStart: () => void;
-  isHost: boolean;
+  onStart?: () => void;
+  canStart?: boolean; // ✅ host-only
 }) {
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");
   const [tag, setTag] = useState("");
+
+  const joinedCount = players?.length ?? 0;
 
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
     return `${window.location.origin}/raid/${code}`;
   }, [code]);
 
-  async function copyToClipboard(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      alert("Copied!");
-    } catch {
-      // fallback
-      try {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-        alert("Copied!");
-      } catch {
-        alert("Copy failed.");
-      }
-    }
-  }
-
   return (
     <div className="grid2">
-      {/* LEFT PANEL */}
+      {/* LEFT */}
       <div className="card">
         <h2 style={{ marginTop: 0 }}>Lobby</h2>
 
@@ -60,45 +42,8 @@ export default function Lobby({
           Join with your name + 5-digit tag. Once enough people join, the host starts the battle.
         </p>
 
-        {/* ✅ HOST VIEW (projector tab): show share info instead of join form */}
-        {isHost && !player && (
-          <div className="pill">
-            <div style={{ fontWeight: 900, marginBottom: 8 }}>🎛️ Host Controls</div>
-
-            <div style={{ opacity: 0.85, lineHeight: 1.6 }}>
-              Share this with the audience:
-              <div style={{ marginTop: 8, display: "grid", gap: 10 }}>
-                <div>
-                  Room code: <b style={{ fontSize: 18 }}>{code}</b>
-                </div>
-
-                {shareUrl && (
-                  <div style={{ wordBreak: "break-all" }}>
-                    Link: <b>{shareUrl}</b>
-                  </div>
-                )}
-
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <button className="btn" onClick={() => copyToClipboard(code)}>
-                    Copy Code
-                  </button>
-                  {shareUrl && (
-                    <button className="btn" onClick={() => copyToClipboard(shareUrl)}>
-                      Copy Link
-                    </button>
-                  )}
-                </div>
-
-                <div style={{ opacity: 0.75, fontSize: 12 }}>
-                  Host note: open a second tab (or incognito) and join as a player if you want to play too.
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ✅ PLAYER VIEW: join form */}
-        {!player && !isHost && (
+        {/* JOIN FORM */}
+        {!player && (
           <div className="form">
             <input
               placeholder="First Name"
@@ -118,42 +63,63 @@ export default function Lobby({
             <button className="btnPrimary" onClick={() => onJoin(first, last, tag)}>
               Join Room {code}
             </button>
+
+            <div className="pill" style={{ marginTop: 12 }}>
+              <div style={{ opacity: 0.85, lineHeight: 1.6 }}>
+                Share with audience: <b style={{ wordBreak: "break-all" }}>{shareUrl}</b>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Joined confirmation */}
+        {/* WAITING VIEW */}
         {player && (
-          <div className="pill">
-            You are in as <b>{player.display_name}</b>
-          </div>
-        )}
+          <>
+            <div className="pill">
+              You are in as <b>{player.display_name}</b>
+            </div>
 
-        {/* ✅ HOST-ONLY start controls */}
-        {isHost && (
-          <div style={{ marginTop: 14 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-              <button
-                className="btnPrimary"
-                onClick={onStart}
-                disabled={!raid || raid?.status !== "lobby" || players.length < 1}
-                title="Start when ready"
-              >
-                Start Battle
-              </button>
+            <div className="pill" style={{ marginTop: 12 }}>
+              <div style={{ fontWeight: 900, marginBottom: 6 }}>⏳ Waiting for host…</div>
+              <div style={{ opacity: 0.85, lineHeight: 1.6 }}>
+                Stay on this page. When the host starts the raid, you’ll automatically switch to the battle.
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              {/* ✅ Host-only Start button */}
+              {canStart && (
+                <button
+                  className="btnPrimary"
+                  onClick={onStart}
+                  disabled={!raid || raid?.status !== "lobby" || joinedCount < 1}
+                  title="Start when ready"
+                >
+                  Start Raid
+                </button>
+              )}
 
               <span style={{ opacity: 0.75, fontSize: 12 }}>
-                Players joined: <b>{players.length}</b>
+                Players joined: <b>{joinedCount}</b>
               </span>
+
+              {raid?.status && (
+                <span style={{ opacity: 0.75, fontSize: 12 }}>
+                  Status: <b>{raid.status}</b>
+                </span>
+              )}
             </div>
 
-            <div style={{ opacity: 0.7, fontSize: 12, marginTop: 8 }}>
-              Tip: project this page for the audience. When you press Start, everyone switches to the battle view.
-            </div>
-          </div>
+            {canStart && (
+              <div style={{ opacity: 0.7, fontSize: 12, marginTop: 10 }}>
+                Tip: You’re the host. When you press Start, everyone switches to the battle view.
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* RIGHT PANEL */}
+      {/* RIGHT */}
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Players</h3>
         <div className="list">

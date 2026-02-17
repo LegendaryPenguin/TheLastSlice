@@ -205,11 +205,12 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var _s = __turbopack_context__.k.signature();
 "use client";
 ;
-function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
+function Lobby({ mode, code, raid, player, players, onJoin, onStart, canStart = false }) {
     _s();
     const [first, setFirst] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [last, setLast] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [tag, setTag] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const joinedCount = players?.length ?? 0;
     const shareUrl = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
         "Lobby.useMemo[shareUrl]": ()=>{
             if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
@@ -219,25 +220,6 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
     }["Lobby.useMemo[shareUrl]"], [
         code
     ]);
-    async function copyToClipboard(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-            alert("Copied!");
-        } catch  {
-            // fallback
-            try {
-                const ta = document.createElement("textarea");
-                ta.value = text;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand("copy");
-                document.body.removeChild(ta);
-                alert("Copied!");
-            } catch  {
-                alert("Copy failed.");
-            }
-        }
-    }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "grid2",
         children: [
@@ -251,7 +233,7 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                         children: "Lobby"
                     }, void 0, false, {
                         fileName: "[project]/src/components/Lobby.tsx",
-                        lineNumber: 57,
+                        lineNumber: 39,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -261,136 +243,10 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                         children: "Join with your name + 5-digit tag. Once enough people join, the host starts the battle."
                     }, void 0, false, {
                         fileName: "[project]/src/components/Lobby.tsx",
-                        lineNumber: 59,
+                        lineNumber: 41,
                         columnNumber: 9
                     }, this),
-                    isHost && !player && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "pill",
-                        children: [
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                style: {
-                                    fontWeight: 900,
-                                    marginBottom: 8
-                                },
-                                children: "🎛️ Host Controls"
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 66,
-                                columnNumber: 13
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                style: {
-                                    opacity: 0.85,
-                                    lineHeight: 1.6
-                                },
-                                children: [
-                                    "Share this with the audience:",
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        style: {
-                                            marginTop: 8,
-                                            display: "grid",
-                                            gap: 10
-                                        },
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                children: [
-                                                    "Room code: ",
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
-                                                        style: {
-                                                            fontSize: 18
-                                                        },
-                                                        children: code
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/components/Lobby.tsx",
-                                                        lineNumber: 72,
-                                                        columnNumber: 30
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/src/components/Lobby.tsx",
-                                                lineNumber: 71,
-                                                columnNumber: 17
-                                            }, this),
-                                            shareUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                style: {
-                                                    wordBreak: "break-all"
-                                                },
-                                                children: [
-                                                    "Link: ",
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
-                                                        children: shareUrl
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/components/Lobby.tsx",
-                                                        lineNumber: 77,
-                                                        columnNumber: 27
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/src/components/Lobby.tsx",
-                                                lineNumber: 76,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                style: {
-                                                    display: "flex",
-                                                    gap: 10,
-                                                    flexWrap: "wrap"
-                                                },
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                        className: "btn",
-                                                        onClick: ()=>copyToClipboard(code),
-                                                        children: "Copy Code"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/components/Lobby.tsx",
-                                                        lineNumber: 82,
-                                                        columnNumber: 19
-                                                    }, this),
-                                                    shareUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                        className: "btn",
-                                                        onClick: ()=>copyToClipboard(shareUrl),
-                                                        children: "Copy Link"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/components/Lobby.tsx",
-                                                        lineNumber: 86,
-                                                        columnNumber: 21
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
-                                                fileName: "[project]/src/components/Lobby.tsx",
-                                                lineNumber: 81,
-                                                columnNumber: 17
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                style: {
-                                                    opacity: 0.75,
-                                                    fontSize: 12
-                                                },
-                                                children: "Host note: open a second tab (or incognito) and join as a player if you want to play too."
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/Lobby.tsx",
-                                                lineNumber: 92,
-                                                columnNumber: 17
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/src/components/Lobby.tsx",
-                                        lineNumber: 70,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 68,
-                                columnNumber: 13
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/Lobby.tsx",
-                        lineNumber: 65,
-                        columnNumber: 11
-                    }, this),
-                    !player && !isHost && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    !player && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "form",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -399,7 +255,7 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                                 onChange: (e)=>setFirst(e.target.value)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 103,
+                                lineNumber: 48,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -408,7 +264,7 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                                 onChange: (e)=>setLast(e.target.value)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 108,
+                                lineNumber: 53,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -417,7 +273,7 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                                 onChange: (e)=>setTag(e.target.value)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 113,
+                                lineNumber: 58,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -429,55 +285,120 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 118,
+                                lineNumber: 63,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "pill",
+                                style: {
+                                    marginTop: 12
+                                },
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    style: {
+                                        opacity: 0.85,
+                                        lineHeight: 1.6
+                                    },
+                                    children: [
+                                        "Share with audience: ",
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
+                                            style: {
+                                                wordBreak: "break-all"
+                                            },
+                                            children: shareUrl
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/Lobby.tsx",
+                                            lineNumber: 69,
+                                            columnNumber: 38
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/src/components/Lobby.tsx",
+                                    lineNumber: 68,
+                                    columnNumber: 15
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/Lobby.tsx",
+                                lineNumber: 67,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Lobby.tsx",
-                        lineNumber: 102,
+                        lineNumber: 47,
                         columnNumber: 11
                     }, this),
-                    player && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "pill",
-                        children: [
-                            "You are in as ",
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
-                                children: player.display_name
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 127,
-                                columnNumber: 27
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/Lobby.tsx",
-                        lineNumber: 126,
-                        columnNumber: 11
-                    }, this),
-                    isHost && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        style: {
-                            marginTop: 14
-                        },
+                    player && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "pill",
+                                children: [
+                                    "You are in as ",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
+                                        children: player.display_name
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/Lobby.tsx",
+                                        lineNumber: 79,
+                                        columnNumber: 29
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/Lobby.tsx",
+                                lineNumber: 78,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "pill",
                                 style: {
+                                    marginTop: 12
+                                },
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        style: {
+                                            fontWeight: 900,
+                                            marginBottom: 6
+                                        },
+                                        children: "⏳ Waiting for host…"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/Lobby.tsx",
+                                        lineNumber: 83,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        style: {
+                                            opacity: 0.85,
+                                            lineHeight: 1.6
+                                        },
+                                        children: "Stay on this page. When the host starts the raid, you’ll automatically switch to the battle."
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/Lobby.tsx",
+                                        lineNumber: 84,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/Lobby.tsx",
+                                lineNumber: 82,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                style: {
+                                    marginTop: 14,
                                     display: "flex",
                                     gap: 10,
                                     alignItems: "center",
                                     flexWrap: "wrap"
                                 },
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    canStart && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         className: "btnPrimary",
                                         onClick: onStart,
-                                        disabled: !raid || raid?.status !== "lobby" || players.length < 1,
+                                        disabled: !raid || raid?.status !== "lobby" || joinedCount < 1,
                                         title: "Start when ready",
-                                        children: "Start Battle"
+                                        children: "Start Raid"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Lobby.tsx",
-                                        lineNumber: 135,
-                                        columnNumber: 15
+                                        lineNumber: 92,
+                                        columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         style: {
@@ -487,46 +408,62 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                                         children: [
                                             "Players joined: ",
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
-                                                children: players.length
+                                                children: joinedCount
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/Lobby.tsx",
-                                                lineNumber: 145,
+                                                lineNumber: 103,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/Lobby.tsx",
-                                        lineNumber: 144,
+                                        lineNumber: 102,
                                         columnNumber: 15
+                                    }, this),
+                                    raid?.status && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        style: {
+                                            opacity: 0.75,
+                                            fontSize: 12
+                                        },
+                                        children: [
+                                            "Status: ",
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("b", {
+                                                children: raid.status
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/Lobby.tsx",
+                                                lineNumber: 108,
+                                                columnNumber: 27
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/Lobby.tsx",
+                                        lineNumber: 107,
+                                        columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 134,
+                                lineNumber: 89,
                                 columnNumber: 13
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            canStart && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 style: {
                                     opacity: 0.7,
                                     fontSize: 12,
-                                    marginTop: 8
+                                    marginTop: 10
                                 },
-                                children: "Tip: project this page for the audience. When you press Start, everyone switches to the battle view."
+                                children: "Tip: You’re the host. When you press Start, everyone switches to the battle view."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 149,
-                                columnNumber: 13
+                                lineNumber: 114,
+                                columnNumber: 15
                             }, this)
                         ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/Lobby.tsx",
-                        lineNumber: 133,
-                        columnNumber: 11
-                    }, this)
+                    }, void 0, true)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Lobby.tsx",
-                lineNumber: 56,
+                lineNumber: 38,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -539,7 +476,7 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                         children: "Players"
                     }, void 0, false, {
                         fileName: "[project]/src/components/Lobby.tsx",
-                        lineNumber: 158,
+                        lineNumber: 124,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -553,7 +490,7 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                                             children: p.display_name
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/Lobby.tsx",
-                                            lineNumber: 162,
+                                            lineNumber: 128,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -564,13 +501,13 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/Lobby.tsx",
-                                            lineNumber: 163,
+                                            lineNumber: 129,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, p.id, true, {
                                     fileName: "[project]/src/components/Lobby.tsx",
-                                    lineNumber: 161,
+                                    lineNumber: 127,
                                     columnNumber: 13
                                 }, this)),
                             players.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -578,25 +515,25 @@ function Lobby({ mode, code, raid, player, players, onJoin, onStart, isHost }) {
                                 children: "No one joined yet."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Lobby.tsx",
-                                lineNumber: 166,
+                                lineNumber: 132,
                                 columnNumber: 36
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Lobby.tsx",
-                        lineNumber: 159,
+                        lineNumber: 125,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Lobby.tsx",
-                lineNumber: 157,
+                lineNumber: 123,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/Lobby.tsx",
-        lineNumber: 54,
+        lineNumber: 36,
         columnNumber: 5
     }, this);
 }
@@ -1477,23 +1414,9 @@ function RaidPage() {
     const [player, setPlayer] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [players, setPlayers] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [attacks, setAttacks] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
-    const [isHost, setIsHost] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [moveSet, setMoveSet] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
         "RaidPage.useState": ()=>(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$moves$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pickFourRandomMoves"])()
     }["RaidPage.useState"]);
-    // ✅ Detect host flag (set when you created the raid on Home)
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "RaidPage.useEffect": ()=>{
-            if (!code || code === "ENTER") return;
-            try {
-                setIsHost(localStorage.getItem(`raid:${code}:isHost`) === "1");
-            } catch  {
-                setIsHost(false);
-            }
-        }
-    }["RaidPage.useEffect"], [
-        code
-    ]);
     // Load saved player for this raid (so refresh doesn't wipe identity)
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "RaidPage.useEffect": ()=>{
@@ -1582,6 +1505,7 @@ function RaidPage() {
             }, {
                 "RaidPage.useEffect.channel": (payload)=>{
                     const atk = payload.new;
+                    // prepend + cap
                     setAttacks({
                         "RaidPage.useEffect.channel": (prev)=>[
                                 atk,
@@ -1621,21 +1545,6 @@ function RaidPage() {
         setMode("lobby");
         await refreshState();
     }
-    async function startBattle() {
-        const res = await fetch("/api/raid/start", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                code
-            })
-        });
-        const json = await res.json();
-        if (json.error) return alert(json.error);
-        setRaid(json.raid);
-        setMode("battle");
-    }
     async function doAttack(moveId) {
         if (!player) return alert("Join first.");
         const res = await fetch("/api/raid/attack", {
@@ -1654,21 +1563,17 @@ function RaidPage() {
         await refreshState();
         setMoveSet((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$moves$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["pickFourRandomMoves"])());
     }
-    // ✅ Single source of truth for mode switching (host sees lobby even if not joined)
+    // Single source of truth for mode switching (PLAYER PAGE ONLY)
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "RaidPage.useEffect": ()=>{
             if (!raid) return;
-            if (raid.status === "lobby") {
-                if (player) setMode("lobby");
-                else setMode(isHost ? "lobby" : "join");
-            }
+            if (raid.status === "lobby") setMode(player ? "lobby" : "join");
             if (raid.status === "live") setMode("battle");
             if (raid.status === "ended") setMode("ended");
         }
     }["RaidPage.useEffect"], [
         raid,
-        player,
-        isHost
+        player
     ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
         className: "pageShell",
@@ -1686,7 +1591,7 @@ function RaidPage() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                lineNumber: 177,
+                                lineNumber: 150,
                                 columnNumber: 11
                             }, this),
                             raid && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1697,7 +1602,7 @@ function RaidPage() {
                                         children: raid.boss_name
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                        lineNumber: 180,
+                                        lineNumber: 153,
                                         columnNumber: 21
                                     }, this),
                                     " — Status: ",
@@ -1705,30 +1610,19 @@ function RaidPage() {
                                         children: raid.status
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                        lineNumber: 180,
+                                        lineNumber: 153,
                                         columnNumber: 55
-                                    }, this),
-                                    isHost ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        style: {
-                                            marginLeft: 10,
-                                            opacity: 0.8
-                                        },
-                                        children: "• HOST"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                        lineNumber: 182,
-                                        columnNumber: 17
-                                    }, this) : null
+                                    }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                                lineNumber: 179,
+                                lineNumber: 152,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/raid/[code]/page.tsx",
-                        lineNumber: 176,
+                        lineNumber: 149,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1741,18 +1635,18 @@ function RaidPage() {
                             children: "Refresh"
                         }, void 0, false, {
                             fileName: "[project]/src/app/raid/[code]/page.tsx",
-                            lineNumber: 189,
+                            lineNumber: 159,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/app/raid/[code]/page.tsx",
-                        lineNumber: 188,
+                        lineNumber: 158,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 175,
+                lineNumber: 148,
                 columnNumber: 7
             }, this),
             mode === "join" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Lobby$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1761,12 +1655,10 @@ function RaidPage() {
                 raid: raid,
                 player: player,
                 players: players,
-                onJoin: joinRaid,
-                onStart: startBattle,
-                isHost: isHost
+                onJoin: joinRaid
             }, void 0, false, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 201,
+                lineNumber: 171,
                 columnNumber: 9
             }, this),
             mode === "lobby" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Lobby$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1775,12 +1667,10 @@ function RaidPage() {
                 raid: raid,
                 player: player,
                 players: players,
-                onJoin: joinRaid,
-                onStart: startBattle,
-                isHost: isHost
+                onJoin: joinRaid
             }, void 0, false, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 214,
+                lineNumber: 182,
                 columnNumber: 9
             }, this),
             mode === "battle" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$BattleArena$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1793,7 +1683,7 @@ function RaidPage() {
                 onAttack: doAttack
             }, void 0, false, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 227,
+                lineNumber: 193,
                 columnNumber: 9
             }, this),
             mode === "ended" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Leaderboard$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1801,17 +1691,17 @@ function RaidPage() {
                 players: players
             }, void 0, false, {
                 fileName: "[project]/src/app/raid/[code]/page.tsx",
-                lineNumber: 238,
+                lineNumber: 204,
                 columnNumber: 28
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/raid/[code]/page.tsx",
-        lineNumber: 174,
+        lineNumber: 147,
         columnNumber: 5
     }, this);
 }
-_s(RaidPage, "UM0YZEYjgek2B2YLvtvklJaOcJ4=", false, function() {
+_s(RaidPage, "GC4T0A6za9sihWx5Mqo4urL47FQ=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useParams"]
     ];
