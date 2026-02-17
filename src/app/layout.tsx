@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import "./globals.css";
 import { Press_Start_2P } from "next/font/google";
 import PrivyProviderWrapper from "@/components/PrivyProviderWrapper";
@@ -22,9 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={press.className}>
-        <PrivyProviderWrapper>
-          {children}
-        </PrivyProviderWrapper>
+        
+        <PrivyProviderWrapper>{children}</PrivyProviderWrapper>
       </body>
     </html>
   );
