@@ -151,6 +151,17 @@ export default function RaidPage() {
     setMoveSet(pickFourRandomMoves());
   }
 
+  // Fires once when the game ends - triggers on-chain PZZA minting
+  // Uses localStorage to prevent re-minting if user revisits the page
+  useEffect(() => {
+    if (raid?.status !== "ended") return;
+    const mintedKey = `raid:${code}:minted`;
+    if (localStorage.getItem(mintedKey)) return;
+    localStorage.setItem(mintedKey, "true");
+    triggerGameEnd(code);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [raid?.status]);
+
   // Single source of truth for mode switching
   useEffect(() => {
     if (!raid) return;
@@ -231,4 +242,6 @@ export default function RaidPage() {
     </main>
   );
 }
+
+
 
