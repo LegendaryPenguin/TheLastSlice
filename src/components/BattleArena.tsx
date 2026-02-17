@@ -52,11 +52,22 @@ export default function BattleArena({
 
   const latestAttack = attacks?.[0] ?? null;
 
+  // Live timer tick (updates every second)
+  const [nowTick, setNowTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setNowTick((x) => x + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const endsIn = useMemo(() => {
-    if (!raid?.ends_at) return null;
+    if (!raid?.ends_at || !raid?.started_at) return null;
+    const t0 = new Date(raid.started_at).getTime();
+    const dt = Date.now() - t0;
+    // Don't start timer until countdown + boss intro ends (4.2s)
+    if (dt < 4200) return null;
     const ms = new Date(raid.ends_at).getTime() - Date.now();
     return Math.max(0, Math.floor(ms / 1000));
-  }, [raid?.ends_at]);
+  }, [raid?.ends_at, raid?.started_at, nowTick]);
 
   // Deduplicate attacks
   const attacksDeduped = useMemo(() => {
@@ -107,12 +118,6 @@ export default function BattleArena({
    * ✅ Synced "Raid Starting" countdown using started_at.
    * Everyone sees the same countdown because it’s based on server time stored in DB.
    */
-  const [nowTick, setNowTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setNowTick((x) => x + 1), 200);
-    return () => clearInterval(id);
-  }, []);
-
   const startOverlay = useMemo(() => {
     if (!raid?.started_at) return { show: false, phase: "none" as const, n: 0 };
     const t0 = new Date(raid.started_at).getTime();
@@ -225,7 +230,7 @@ export default function BattleArena({
                 <div className="hudSub">RAID BOSS</div>
               </div>
 
-              <div className="hudSub">⏱ {endsIn ?? "—"}s</div>
+              <div className="hudSub">⏱ {endsIn !== null ? `${endsIn}s` : "—"}</div>
             </div>
 
             <div className="hpRow">
@@ -247,36 +252,38 @@ export default function BattleArena({
             </div>
           </div>
 
-          {/* BOSS */}
-          <motion.div
-            className={`boss ${flashBoss ? "hitFlash" : ""}`}
-            animate={{ scale: flashBoss ? 1.02 : 1 }}
-            transition={{ duration: 0.15 }}
-          >
-            <div className="bossSprite">🍍🍕</div>
-            <div className="bossNameplate">PINEAPPLE TITAN</div>
-          </motion.div>
+          {/* BOSS + ATTACK FX (stacked so animations appear on top of sprite) */}
+          <div className="bossRow">
+            <motion.div
+              className={`boss ${flashBoss ? "hitFlash" : ""}`}
+              animate={{ scale: flashBoss ? 1.02 : 1 }}
+              transition={{ duration: 0.15 }}
+            >
+              <div className="bossSprite">🍍🍕</div>
+              <div className="bossNameplate">PINEAPPLE TITAN</div>
+            </motion.div>
 
-          {/* ATTACK FX */}
-          <AnimatePresence>
-            {latestAttack && (
-              <motion.div
-                key={latestAttack.id}
-                className={`atkFx atk-${latestAttack.anim_type}`}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                transition={{ duration: 0.35 }}
-              >
-                <div className="atkLabel">
-                  {latestAttack.player_name} used <b>{latestAttack.move_name}</b>{" "}
-                  <span className={latestAttack.crit ? "critTag" : ""}>
-                    -{latestAttack.damage} {latestAttack.crit ? "CRIT!" : ""}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+            {/* ATTACK FX — positioned over the boss */}
+            <AnimatePresence>
+              {latestAttack && (
+                <motion.div
+                  key={latestAttack.id}
+                  className={`atkFx atk-${latestAttack.anim_type}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  transition={{ duration: 0.35 }}
+                >
+                  <div className="atkLabel">
+                    {latestAttack.player_name} used <b>{latestAttack.move_name}</b>{" "}
+                    <span className={latestAttack.crit ? "critTag" : ""}>
+                      -{latestAttack.damage} {latestAttack.crit ? "CRIT!" : ""}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* PLAYER HUD */}
           <div className="hud playerHud">

@@ -4,26 +4,21 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { supabaseClient } from "@/lib/supabaseClient";
-import { pickFourRandomMoves } from "@/lib/moves";
 import Lobby from "@/components/Lobby";
-import BattleArena from "@/components/BattleArena";
-import Leaderboard from "@/components/Leaderboard";
 
-type Mode = "join" | "lobby" | "battle" | "ended";
+type Mode = "join" | "lobby";
 
 export default function HostRoomPage() {
   const params = useParams<{ code: string }>();
   const router = useRouter();
   const { user } = usePrivy();
+
   const code = (params?.code ?? "ENTER").toString().toUpperCase();
 
   const [mode, setMode] = useState<Mode>("join");
   const [raid, setRaid] = useState<any>(null);
   const [player, setPlayer] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
-  const [attacks, setAttacks] = useState<any[]>([]);
-
-  const [moveSet, setMoveSet] = useState(() => pickFourRandomMoves());
 
   useEffect(() => {
     if (!code || code === "ENTER") return;
@@ -37,8 +32,6 @@ export default function HostRoomPage() {
   }, [code]);
 
   async function refreshState() {
-    if (!code || code === "ENTER") return;
-
     const res = await fetch("/api/raid/state", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -50,26 +43,28 @@ export default function HostRoomPage() {
 
     setRaid(json.raid);
     setPlayers(json.players);
-    setAttacks(json.attacks);
   }
 
   useEffect(() => {
     if (!code || code === "ENTER") return;
     refreshState();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
   useEffect(() => {
     if (!raid?.id) return;
 
     const channel = supabaseClient
-      .channel(`hostRaid:${raid.id}`)
+      .channel(`host:${raid.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "raids", filter: `id=eq.${raid.id}` },
         (payload) => {
           const next = payload.new as any;
           setRaid((r: any) => ({ ...r, ...next }));
+
+          if (next.status === "live") {
+            router.push(`/raid/${code}`);
+          }
         }
       )
       .on(
@@ -85,20 +80,12 @@ export default function HostRoomPage() {
           if (!json.error) setPlayers(json.players);
         }
       )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "attacks", filter: `raid_id=eq.${raid.id}` },
-        (payload) => {
-          const atk = payload.new as any;
-          setAttacks((prev) => [atk, ...prev].slice(0, 200));
-        }
-      )
       .subscribe();
 
     return () => {
       supabaseClient.removeChannel(channel);
     };
-  }, [raid?.id, code]);
+  }, [raid?.id, code, router]);
 
   async function joinRaid(firstName: string, lastName: string) {
     if (!user?.id) return alert("Connect wallet or continue as guest first.");
@@ -107,14 +94,15 @@ export default function HostRoomPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, firstName, lastName, privyUserId: user.id }),
     });
+
     const json = await res.json();
     if (json.error) return alert(json.error);
 
     setRaid(json.raid);
     setPlayer(json.player);
     localStorage.setItem(`raid:${code}:player`, JSON.stringify(json.player));
-    setMode("lobby");
 
+    setMode("lobby");
     await refreshState();
   }
 
@@ -124,48 +112,25 @@ export default function HostRoomPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),
     });
+
     const json = await res.json();
     if (json.error) return alert(json.error);
 
-    setRaid(json.raid);
-
-    // Host should PLAY after starting:
     router.push(`/raid/${code}`);
-  }
-
-  async function doAttack(moveId: number) {
-    if (!player) return alert("Join first.");
-
-    const res = await fetch("/api/raid/attack", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, playerId: player.id, moveId }),
-    });
-    const json = await res.json();
-    if (json.error) return;
-
-    await refreshState();
-    setMoveSet(pickFourRandomMoves());
   }
 
   useEffect(() => {
     if (!raid) return;
-
     if (raid.status === "lobby") setMode(player ? "lobby" : "join");
-    if (raid.status === "live") setMode("battle");
-    if (raid.status === "ended") setMode("ended");
   }, [raid, player]);
 
   return (
     <main className="pageShell">
       <div className="raidTop">
         <div>
-          <div className="raidTitle">🎛️ Host Room {code}</div>
-          {raid && (
-            <div className="raidSub">
-              Boss: <b>{raid.boss_name}</b> — Status: <b>{raid.status}</b>
-            </div>
-          )}
+          <div className="raidTitle">Host Room {code}</div>
+          {/* ✅ NO status line */}
+          {raid?.boss_name ? <div className="raidSub">Boss: <b>{raid.boss_name}</b></div> : null}
         </div>
 
         <div className="raidRight">
@@ -175,47 +140,18 @@ export default function HostRoomPage() {
         </div>
       </div>
 
-      {mode === "join" && (
-        <Lobby
-          mode="join"
-          code={code}
-          raid={raid}
-          player={player}
-          players={players}
-          privyUserId={user?.id ?? null}
-          onJoin={joinRaid}
-          onStart={startRaid}
-          isHost={true}
-        />
-      )}
-
-      {mode === "lobby" && (
-        <Lobby
-          mode="lobby"
-          code={code}
-          raid={raid}
-          player={player}
-          players={players}
-          privyUserId={user?.id ?? null}
-          onJoin={joinRaid}
-          onStart={startRaid}
-          isHost={true}
-        />
-      )}
-
-      {mode === "battle" && (
-        <BattleArena
-          code={code}
-          raid={raid}
-          player={player}
-          players={players}
-          attacks={attacks}
-          moves={moveSet}
-          onAttack={doAttack}
-        />
-      )}
-
-      {mode === "ended" && <Leaderboard raid={raid} players={players} />}
+      <Lobby
+        mode={mode}
+        code={code}
+        raid={raid}
+        player={player}
+        players={players}
+        privyUserId={user?.id ?? null}
+        onJoin={joinRaid}
+        onStart={startRaid}
+        isHost={true}
+      />
     </main>
   );
 }
+

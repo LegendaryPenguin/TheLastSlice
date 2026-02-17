@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
+import { customAlphabet } from "nanoid";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { nanoid } from "nanoid";
+
+const alphanumeric = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 6);
 
 export async function POST() {
   const sb = supabaseServer();
-  const code = nanoid(6).toUpperCase(); // room code like "A1B2C3"
+  const code = alphanumeric();
 
   const { data, error } = await sb
     .from("raids")
