@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import "./globals.css";
 import { Press_Start_2P } from "next/font/google";
 import PrivyProviderWrapper from "@/components/PrivyProviderWrapper";
 import GuestAccountCreator from "@/components/GuestAccountCreator";
+import AppHeader from "@/components/AppHeader";
 
 const press = Press_Start_2P({
   weight: "400",
@@ -23,9 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={press.className}>
-        
         <PrivyProviderWrapper>
           <GuestAccountCreator />
+          <AppHeader />
           {children}
         </PrivyProviderWrapper>
       </body>

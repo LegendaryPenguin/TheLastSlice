@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import PrivyConnectButton from "./PrivyConnectButton";
+import PzzaBalance from "./PzzaBalance";
 
 export default function AppHeader() {
   return (
@@ -38,7 +39,11 @@ export default function AppHeader() {
         <Image src="/PizzaMan.svg" alt="" width={20} height={20} className="object-contain" />
         <span>Pizza Raid</span>
       </Link>
-      <PrivyConnectButton />
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <PzzaBalance />
+        <PrivyConnectButton />
+      </div>
     </header>
   );
 }

@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { mintTokens } from "@/lib/contract";
+import { isWalletAddress } from "@/lib/utils";
 
 export async function POST(req: Request) {
   const sb = supabaseServer();
@@ -19,6 +20,11 @@ export async function POST(req: Request) {
   if (raidErr || !raid) return NextResponse.json({ error: "Raid not found." }, { status: 404 });
   if (raid.status !== "ended") return NextResponse.json({ error: "Raid not ended yet." }, { status: 409 });
 
+  // Idempotency: if tokens were already minted for this raid, skip
+  if (raid.tokens_minted) {
+    return NextResponse.json({ ok: true, minted: [], message: "Rewards already distributed." });
+  }
+
   // Load all players
   const { data: players, error: pErr } = await sb
     .from("players")
@@ -35,18 +41,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, minted: [], message: "No damage dealt, nothing to mint." });
   }
 
+  // Mark as minted immediately to prevent duplicate runs from other clients
+  await sb.from("raids").update({ tokens_minted: true }).eq("id", raid.id);
+
   const results = [];
 
   for (const player of players) {
-    // Wallet is stored in the tag column
+    // tag holds the wallet address (0x...) if the player had a wallet at join time
     const wallet = player.tag as string | null;
 
-    if (!wallet || !wallet.startsWith("0x")) {
-      results.push({ player: player.display_name, address: wallet, amount: 0, txHash: null, error: "No wallet address" });
+    if (!wallet || !isWalletAddress(wallet)) {
+      console.warn(`[gameEnd] No wallet for player "${player.display_name}" (tag: ${wallet})`);
+      results.push({
+        player: player.display_name,
+        address: wallet,
+        amount: 0,
+        txHash: null,
+        error: "No wallet address â€” player joined without a connected wallet",
+      });
       continue;
     }
 
-    // Same formula as the Leaderboard: proportional share out of 100
+    // Proportional share out of 100 units (same formula as Leaderboard)
     const rewardUnits = Math.round((100 * player.total_damage) / total);
     if (rewardUnits === 0) {
       results.push({ player: player.display_name, address: wallet, amount: 0, txHash: null, error: "Zero reward" });
@@ -54,13 +70,15 @@ export async function POST(req: Request) {
     }
 
     // 2 decimals: rewardUnits * 100 raw = rewardUnits.00 PZZA
-    // e.g. 30% damage share -> 30 rewardUnits -> 3000 raw -> 30.00 PZZA
+    // e.g. 30% damage share -> 3000 raw -> 30.00 PZZA
     const rawAmount = BigInt(rewardUnits * 100);
 
     try {
       const txHash = await mintTokens(wallet as `0x${string}`, rawAmount);
+      console.log(`[gameEnd] Minted ${rewardUnits} PZZA to ${wallet} (${player.display_name}) â€” tx: ${txHash}`);
       results.push({ player: player.display_name, address: wallet, amount: rewardUnits, txHash });
     } catch (e: any) {
+      console.error(`[gameEnd] Mint failed for ${player.display_name} (${wallet}):`, e?.message);
       results.push({ player: player.display_name, address: wallet, amount: rewardUnits, txHash: null, error: e.message });
     }
   }

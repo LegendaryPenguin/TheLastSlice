@@ -2,11 +2,10 @@
 
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useEffect, useRef, useState } from "react";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { pickFourRandomMoves } from "@/lib/moves";
-import CopyableAddress from "@/components/CopyableAddress";
 import Lobby from "@/components/Lobby";
 import BattleArena from "@/components/BattleArena";
 import Leaderboard from "@/components/Leaderboard";
@@ -31,6 +30,34 @@ export default function RaidPage() {
   const [refreshLoading, setRefreshLoading] = useState(false);
 
   const [moveSet, setMoveSet] = useState(() => pickFourRandomMoves());
+
+  // Prevent triggerGameEnd from firing more than once per browser session
+  const gameEndCalledRef = useRef(false);
+
+  // When Privy creates the embedded wallet after joining, backfill the tag so minting works.
+  // This handles the race condition where wallets[] is empty at join time.
+  useEffect(() => {
+    if (!player?.id || !user?.id || !walletAddress) return;
+    // Already has the wallet address as tag - nothing to do
+    if (player.tag === walletAddress) return;
+
+    fetch("/api/raid/update-wallet", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId: player.id, privyUserId: user.id, walletAddress }),
+    })
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.updated) {
+          const updated = { ...player, tag: walletAddress };
+          setPlayer(updated);
+          localStorage.setItem(`raid:${code}:player`, JSON.stringify(updated));
+          console.log("[wallet-backfill] Updated player tag to wallet address:", walletAddress);
+        }
+      })
+      .catch(console.error);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletAddress, player?.id, user?.id]);
 
   // Load saved player for this raid (so refresh doesn't wipe identity)
   useEffect(() => {
@@ -89,7 +116,6 @@ export default function RaidPage() {
         "postgres_changes",
         { event: "*", schema: "public", table: "players", filter: `raid_id=eq.${raid.id}` },
         async () => {
-          // Re-fetch ordered players for leaderboard correctness
           const res = await fetch("/api/raid/state", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -104,7 +130,6 @@ export default function RaidPage() {
         { event: "INSERT", schema: "public", table: "attacks", filter: `raid_id=eq.${raid.id}` },
         (payload) => {
           const atk = payload.new as any;
-          // prepend + cap
           setAttacks((prev) => [atk, ...prev].slice(0, 200));
         }
       )
@@ -123,7 +148,13 @@ export default function RaidPage() {
       const res = await fetch("/api/raid/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, firstName, lastName, privyUserId: user.id }),
+        body: JSON.stringify({
+          code,
+          firstName,
+          lastName,
+          privyUserId: user.id,
+          walletAddress: walletAddress ?? "",
+        }),
       });
       const json = await res.json();
       if (json.error) return alert(json.error);
@@ -162,7 +193,14 @@ export default function RaidPage() {
 
     if (raid.status === "lobby") setMode(player ? "lobby" : "join");
     if (raid.status === "live") setMode("battle");
-    if (raid.status === "ended") setMode("ended");
+    if (raid.status === "ended") {
+      setMode("ended");
+      // Only fire once per browser session - the server handles idempotency too
+      if (!gameEndCalledRef.current) {
+        gameEndCalledRef.current = true;
+        triggerGameEnd(code);
+      }
+    }
   }, [raid, player]);
 
   // When in battle, poll for raid end (timer expiry or boss defeated) so we auto-switch to leaderboard
@@ -191,7 +229,7 @@ export default function RaidPage() {
             </div>
             {raid && (
               <div className="raidSub">
-                Boss: <b>{raid.boss_name}</b> — Status: <b>{raid.status}</b>
+                Boss: <b>{raid.boss_name}</b> &mdash; Status: <b>{raid.status}</b>
               </div>
             )}
           </div>
@@ -204,7 +242,7 @@ export default function RaidPage() {
               }}
               disabled={refreshLoading}
             >
-              {refreshLoading ? "…" : "Refresh"}
+              {refreshLoading ? "..." : "Refresh"}
             </button>
           </div>
         </div>
@@ -253,6 +291,3 @@ export default function RaidPage() {
     </main>
   );
 }
-
-
-
