@@ -104,7 +104,12 @@ export default function Leaderboard({ raid, players }: { raid: any; players: any
             transition={{ duration: 0.18, delay: Math.min(0.6, idx * 0.04) }}
           >
             <div className="lbRank">{idx + 1}</div>
-            <div className="lbName">{p.display_name}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+              <div className="lbName">{p.display_name}</div>
+              {p.wallet && (
+                <CopyableAddress address={p.wallet} style={{ padding: "4px 8px", fontSize: 11 }} />
+              )}
+            </div>
             <div className="lbDmg">{p.total_damage}</div>
             <div className="lbReward">{rewardUnits(p.total_damage)} / 100</div>
           </motion.div>

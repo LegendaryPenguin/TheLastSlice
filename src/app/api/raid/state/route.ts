@@ -29,6 +29,13 @@ export async function POST(req: Request) {
     .eq("raid_id", raid.id)
     .order("total_damage", { ascending: false });
 
+  // Map tag to wallet when tag contains a wallet address (0x + 40 hex)
+  const isWallet = (s: string | null) => s && /^0x[a-fA-F0-9]{40}$/.test(s);
+  const players = (playersRaw || []).map((p) => ({
+    ...p,
+    wallet: isWallet(p.tag) ? p.tag : undefined,
+  }));
+
   const { data: attacks } = await sb
     .from("attacks")
     .select("*")
@@ -36,5 +43,5 @@ export async function POST(req: Request) {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  return NextResponse.json({ raid, players: players || [], attacks: attacks || [] });
+  return NextResponse.json({ raid, players, attacks: attacks || [] });
 }

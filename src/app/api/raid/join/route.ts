@@ -31,9 +31,20 @@ export async function POST(req: Request) {
   }
 
   if (raid.status === "ended") {
-  return NextResponse.json({ error: "Raid already ended." }, { status: 409 });
-}
+    return NextResponse.json({ error: "Raid already ended." }, { status: 409 });
+  }
 
+  // Check for duplicate wallet in this raid (stored in tag column)
+  const { data: existing } = await sb
+    .from("players")
+    .select("id")
+    .eq("raid_id", raid.id)
+    .eq("tag", wallet)
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json({ error: "This wallet already joined this raid." }, { status: 409 });
+  }
 
   const { data: player, error: pErr } = await sb
     .from("players")
@@ -52,5 +63,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: pErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ raid, player });
+  // Attach wallet for frontend (stored in tag column)
+  const playerWithWallet = { ...player, wallet: player.tag };
+
+  return NextResponse.json({ raid, player: playerWithWallet });
 }
+

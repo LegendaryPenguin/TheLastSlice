@@ -6,9 +6,11 @@ import { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { pickFourRandomMoves } from "@/lib/moves";
+import CopyableAddress from "@/components/CopyableAddress";
 import Lobby from "@/components/Lobby";
 import BattleArena from "@/components/BattleArena";
 import Leaderboard from "@/components/Leaderboard";
+import { triggerGameEnd } from "@/hooks/gameEnd";
 
 type Mode = "join" | "lobby" | "battle" | "ended";
 
@@ -16,6 +18,8 @@ export default function RaidPage() {
   const params = useParams<{ code: string }>();
   const { user } = usePrivy();
   const code = (params?.code ?? "ENTER").toString().toUpperCase();
+  const { wallets } = useWallets();
+  const walletAddress = wallets.find((w) => w.walletClientType === "privy")?.address ?? null;
 
   const [mode, setMode] = useState<Mode>("join");
   const [raid, setRaid] = useState<any>(null);
@@ -249,3 +253,6 @@ export default function RaidPage() {
     </main>
   );
 }
+
+
+
