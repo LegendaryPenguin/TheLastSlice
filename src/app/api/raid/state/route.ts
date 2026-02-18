@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { distributeRaidRewards } from "@/lib/distributeRewards";
 
 export async function POST(req: Request) {
   const sb = supabaseServer();
@@ -21,11 +20,7 @@ export async function POST(req: Request) {
     if (now.getTime() > new Date(raid.ends_at).getTime()) {
       await sb.from("raids").update({ status: "ended" }).eq("id", raid.id);
       raid.status = "ended";
-      // Trigger PizzaCoin distribution (idempotent via rewards_distributed)
-      const { data: endPlayers } = await sb.from("players").select("id, total_damage, tag").eq("raid_id", raid.id);
-      if (endPlayers) {
-        await distributeRaidRewards(endPlayers);
-      }
+      // Distribution happens when host loads Leaderboard (host provides JWT)
     }
   }
 

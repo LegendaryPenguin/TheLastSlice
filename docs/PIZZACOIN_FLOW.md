@@ -1,47 +1,33 @@
-# How PizzaCoin Distribution Works
+# Raid Rewards (0.1 MON)
 
 ## Overview
 
-PizzaCoins are **minted by the server** (contract owner) and **sent to each player's wallet**. Players do **not** sign anything—they receive tokens automatically.
+When a raid ends, each player receives **0.1 MON** (native token) sent from your account (`PIZZACOIN_OWNER_PRIVATE_KEY`) to their wallet.
 
 ## Flow
 
-1. **Raid ends** (boss defeated or timer expires)
-2. **Distribution is triggered** from:
-   - `/api/raid/attack` when boss HP hits 0
-   - `/api/raid/state` when timer expires
-   - `/api/raid/distribute-rewards` when the Leaderboard is shown
-3. **For each player:**
-   - Server fetches their wallet address from **Privy API** (using `tag` = Privy user ID)
-   - Server calls `mint(playerAddress, amount)` on the PizzaCoin contract
-   - The **contract owner's private key** (in `.env`) signs the transaction
-4. **Tokens appear** in the player's MetaMask/Privy wallet
+1. Raid ends (boss defeated or timer expires)
+2. When the Leaderboard is shown, the distribute API runs
+3. For each player: fetch wallet address from Privy → send 0.1 MON from your account
+4. Tokens appear in the player's wallet
 
-## Who Signs?
+## Required
 
-| Role | Signs? | Purpose |
-|------|--------|---------|
-| **Contract owner** (server) | ✓ | Calls `mint()` — only the owner can mint |
-| **Player** (MetaMask/Privy) | ✗ | Receives tokens; no signature needed |
+- **PIZZACOIN_OWNER_PRIVATE_KEY** – Your wallet's private key (64 hex chars). Must have enough MON for gas + (0.1 MON × number of players).
+- **PRIVY_APP_SECRET** – To fetch player wallet addresses from Privy API
+- **PIZZACOIN_RPC_URL** (optional) – Defaults to `https://rpc.ankr.com/monad_testnet`
+- **PIZZACOIN_CHAIN_ID** (optional) – Defaults to 10143 (Monad testnet)
 
-The PizzaCoin contract has `onlyOwner` on `mint()`—so the user's wallet cannot mint. The server (as owner) mints **to** the user's address.
+## Idempotency
 
-## Required Env Vars
+Add a `rewards_distributed` column to the `raids` table (boolean, default false) via Supabase Table Editor. This prevents duplicate distributions when the Leaderboard re-renders.
 
-```
-PIZZACOIN_CONTRACT_ADDRESS=0x...   # Deployed contract
-PIZZACOIN_OWNER_PRIVATE_KEY=0x... # Wallet that OWNS the contract (deployer)
-PRIVY_APP_SECRET=...              # To fetch wallet addresses from Privy API
-```
+## Players need wallets
 
-The `PIZZACOIN_OWNER_PRIVATE_KEY` must be the wallet that deployed the contract (the `owner` in the contract).
+Players must have an Ethereum wallet linked in Privy. If they use "Continue as Guest", Privy must create an embedded wallet for them (check Privy dashboard: enable embedded wallets for guests).
 
-## Debugging
+If a player has no wallet, they are skipped (no error, just no MON sent).
 
-- **Leaderboard** now shows: "✓ X player(s) received PizzaCoins" or an error message
-- **Server logs** (terminal): `[Privy] getUser failed` or `[PizzaCoin] mint failed` if something goes wrong
-- **Common issues:**
-  - Contract not deployed on Monad testnet (chain 10143)
-  - Owner key doesn't match contract owner
-  - Player has no wallet linked in Privy (e.g. email-only login)
-  - PRIVY_APP_SECRET missing or wrong
+## Guest accounts
+
+If "Continue as Guest" fails to create an account, enable guest accounts in your [Privy Dashboard](https://dashboard.privy.io) → App Settings → Login methods.

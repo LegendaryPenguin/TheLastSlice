@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Leaderboard({
@@ -18,21 +18,19 @@ export default function Leaderboard({
   const total = useMemo(() => players.reduce((s, p) => s + (p.total_damage || 0), 0), [players]);
   const defeated = raid?.boss_hp === 0;
 
-  /** Reward in Pizza Coins (contribution % = Pizza Coins earned) */
-  function rewardPizzaCoins(dmg: number) {
-    if (total <= 0) return 0;
-    return Math.round((100 * dmg) / total);
-  }
-
-  // Trigger reward distribution when leaderboard is shown
   const [rewardStatus, setRewardStatus] = useState<{
     distributed?: number;
     skipped?: number;
     errors?: string[];
   } | null>(null);
 
+  const hasTriggeredDistribute = useRef(false);
+
   useEffect(() => {
     if (!code || !raid?.id) return;
+    if (hasTriggeredDistribute.current) return;
+    hasTriggeredDistribute.current = true;
+
     fetch("/api/raid/distribute-rewards", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -40,17 +38,19 @@ export default function Leaderboard({
     })
       .then((r) => r.json())
       .then((data) => {
-        if (data.ok) {
+        if (data?.ok) {
           setRewardStatus({
             distributed: data.distributed ?? 0,
             skipped: data.skipped ?? 0,
             errors: data.errors ?? [],
           });
           if (data.distributed > 0) onDistribute?.();
+        } else if (data?.errors?.length) {
+          setRewardStatus({ errors: data.errors });
         }
       })
       .catch((err) => setRewardStatus({ errors: [String(err)] }));
-  }, [code, raid?.id, onDistribute]);
+  }, [code, raid?.id]);
 
   return (
     <motion.div
@@ -129,7 +129,7 @@ export default function Leaderboard({
         <div style={{ marginBottom: 12, fontSize: 12, opacity: 0.9 }}>
           {rewardStatus.distributed !== undefined && rewardStatus.distributed > 0 ? (
             <span style={{ color: "#22c55e" }}>
-              ✓ {rewardStatus.distributed} player(s) received PizzaCoins
+              ✓ {rewardStatus.distributed} player(s) received 0.1 MON
             </span>
           ) : rewardStatus.errors?.length ? (
             <span style={{ color: "#f59e0b" }}>
@@ -137,7 +137,7 @@ export default function Leaderboard({
             </span>
           ) : rewardStatus.skipped !== undefined && rewardStatus.skipped > 0 ? (
             <span className="muted">
-              No wallets to mint to ({rewardStatus.skipped} skipped)
+              No wallets to send to ({rewardStatus.skipped} skipped)
             </span>
           ) : null}
         </div>
@@ -148,7 +148,7 @@ export default function Leaderboard({
           <div>#</div>
           <div>Player</div>
           <div>Damage</div>
-          <div>Pizza Coins</div>
+          <div>Reward</div>
         </div>
 
         {players.map((p, idx) => (
@@ -162,7 +162,7 @@ export default function Leaderboard({
             <div className="lbRank">{idx + 1}</div>
             <div className="lbName">{p.display_name}</div>
             <div className="lbDmg">{p.total_damage}</div>
-            <div className="lbReward">{rewardPizzaCoins(p.total_damage)} PZZA</div>
+            <div className="lbReward">0.1 MON</div>
           </motion.div>
         ))}
 

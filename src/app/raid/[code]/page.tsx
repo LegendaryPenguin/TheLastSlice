@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { pickFourRandomMoves } from "@/lib/moves";
@@ -68,6 +68,8 @@ export default function RaidPage() {
   }, [code]);
 
   // Subscribe realtime once raid is known
+  const playersDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (!raid?.id) return;
 
@@ -84,15 +86,18 @@ export default function RaidPage() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "players", filter: `raid_id=eq.${raid.id}` },
-        async () => {
-          // Re-fetch ordered players for leaderboard correctness
-          const res = await fetch("/api/raid/state", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code }),
-          });
-          const json = await res.json();
-          if (!json.error) setPlayers(json.players);
+        () => {
+          if (playersDebounceRef.current) clearTimeout(playersDebounceRef.current);
+          playersDebounceRef.current = setTimeout(async () => {
+            playersDebounceRef.current = null;
+            const res = await fetch("/api/raid/state", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code }),
+            });
+            const json = await res.json();
+            if (!json.error) setPlayers(json.players);
+          }, 800);
         }
       )
       .on(
@@ -107,6 +112,7 @@ export default function RaidPage() {
       .subscribe();
 
     return () => {
+      if (playersDebounceRef.current) clearTimeout(playersDebounceRef.current);
       supabaseClient.removeChannel(channel);
     };
   }, [raid?.id, code]);
@@ -172,7 +178,7 @@ export default function RaidPage() {
       }
     };
 
-    const id = setInterval(checkEnded, 1000);
+    const id = setInterval(checkEnded, 3000);
     return () => clearInterval(id);
   }, [mode, raid?.id, raid?.ends_at, raid?.status]);
 

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { clamp } from "@/lib/utils";
 import { getMoveById } from "@/lib/moves";
-import { distributeRaidRewards } from "@/lib/distributeRewards";
 
 const ENERGY_MAX = 100;
 const ENERGY_REGEN_PER_SEC = 25; // 0->100 in 4 seconds
@@ -38,10 +37,6 @@ export async function POST(req: Request) {
   // End check
   if (raid.ends_at && now.getTime() > new Date(raid.ends_at).getTime()) {
     await sb.from("raids").update({ status: "ended" }).eq("id", raid.id);
-    const { data: endPlayers } = await sb.from("players").select("id, total_damage, tag").eq("raid_id", raid.id);
-    if (endPlayers) {
-      await distributeRaidRewards(endPlayers);
-    }
     return NextResponse.json({ error: "Raid ended." }, { status: 409 });
   }
 
@@ -107,14 +102,6 @@ export async function POST(req: Request) {
 
   const { error: raidUpErr } = await sb.from("raids").update(raidUpdate).eq("id", raid.id);
   if (raidUpErr) return NextResponse.json({ error: raidUpErr.message }, { status: 500 });
-
-  // Distribute PizzaCoins when boss defeated
-  if (newBossHp === 0) {
-    const { data: endPlayers } = await sb.from("players").select("id, total_damage, tag").eq("raid_id", raid.id);
-    if (endPlayers) {
-      await distributeRaidRewards(endPlayers);
-    }
-  }
 
   return NextResponse.json({
     ok: true,
