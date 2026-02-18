@@ -16,7 +16,7 @@ export async function POST() {
       boss_name: "Pizza Titan",
       boss_hp: 3600,
       boss_hp_max: 3600,
-      duration_seconds: 10,
+      duration_seconds: 65,
     })
     .select("*")
     .single();
