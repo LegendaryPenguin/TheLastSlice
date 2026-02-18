@@ -120,6 +120,22 @@ export default function Leaderboard({
         ))}
       </div>
 
+      <div
+        style={{
+          textAlign: "center",
+          padding: "16px 20px",
+          marginBottom: 16,
+          borderRadius: 14,
+          border: defeated ? "2px solid rgba(34,197,94,0.6)" : "2px solid rgba(239,68,68,0.6)",
+          background: defeated ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+          fontWeight: 900,
+          fontSize: 22,
+          letterSpacing: 2,
+          color: defeated ? "#22c55e" : "#ef4444",
+        }}
+      >
+        {defeated ? "🏆 VICTORY! You beat the boss! 🏆" : "💀 DEFEAT — Time ran out 💀"}
+      </div>
       <h2 style={{ marginTop: 0 }}>🏆 Leaderboard</h2>
       <div style={{ opacity: 0.8, marginBottom: 12 }}>
         Boss: <b>{raid?.boss_name}</b> — Result:{" "}
