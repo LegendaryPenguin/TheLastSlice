@@ -245,7 +245,9 @@ export default function RaidPage() {
         />
       )}
 
-      {mode === "ended" && <Leaderboard raid={raid} players={players} />}
+      {mode === "ended" && (
+        <Leaderboard raid={raid} players={players} code={code} onDistribute={refreshState} />
+      )}
     </main>
   );
 }
