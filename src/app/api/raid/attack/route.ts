@@ -4,7 +4,7 @@ import { clamp } from "@/lib/utils";
 import { getMoveById } from "@/lib/moves";
 
 const ENERGY_MAX = 100;
-const ENERGY_REGEN_PER_SEC = 25; // 0->100 in 4 seconds
+const ENERGY_REGEN_PER_SEC = 10; // 0->100 in 10 seconds
 const CRIT_MULT = 1.2;
 
 export async function POST(req: Request) {

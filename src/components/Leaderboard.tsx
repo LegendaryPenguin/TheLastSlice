@@ -129,7 +129,7 @@ export default function Leaderboard({
         <div style={{ marginBottom: 12, fontSize: 12, opacity: 0.9 }}>
           {rewardStatus.distributed !== undefined && rewardStatus.distributed > 0 ? (
             <span style={{ color: "#22c55e" }}>
-              ✓ {rewardStatus.distributed} player(s) received 0.1 MON
+              ✓ {rewardStatus.distributed} player(s) received MON (1 MON pool, by contribution)
             </span>
           ) : rewardStatus.errors?.length ? (
             <span style={{ color: "#f59e0b" }}>
@@ -148,23 +148,27 @@ export default function Leaderboard({
           <div>#</div>
           <div>Player</div>
           <div>Damage</div>
-          <div>Reward</div>
+          <div>Share</div>
         </div>
 
-        {players.map((p, idx) => (
-          <motion.div
-            className="lbRow"
-            key={p.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.18, delay: Math.min(0.6, idx * 0.04) }}
-          >
-            <div className="lbRank">{idx + 1}</div>
-            <div className="lbName">{p.display_name}</div>
-            <div className="lbDmg">{p.total_damage}</div>
-            <div className="lbReward">0.1 MON</div>
-          </motion.div>
-        ))}
+        {players.map((p, idx) => {
+          const pct = total > 0 ? Math.round((100 * (p.total_damage || 0)) / total) : 0;
+          const monShare = total > 0 ? ((p.total_damage || 0) / total).toFixed(2) : "0";
+          return (
+            <motion.div
+              className="lbRow"
+              key={p.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18, delay: Math.min(0.6, idx * 0.04) }}
+            >
+              <div className="lbRank">{idx + 1}</div>
+              <div className="lbName">{p.display_name}</div>
+              <div className="lbDmg">{p.total_damage}</div>
+              <div className="lbReward">{monShare} MON ({pct}%)</div>
+            </motion.div>
+          );
+        })}
 
         {players.length === 0 && <div className="muted">No players.</div>}
       </div>

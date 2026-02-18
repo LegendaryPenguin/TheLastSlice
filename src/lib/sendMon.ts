@@ -1,16 +1,16 @@
 import { createWalletClient, createPublicClient, http, type Address } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-/** 0.1 MON in wei (18 decimals) */
-const REWARD_AMOUNT_WEI = BigInt("100000000000000000");
+/** Minimum send: 0.001 MON to avoid dust */
+const MIN_WEI = BigInt("1000000000000000");
 
 /**
- * Send 0.1 MON (native) to a player's wallet.
- * Uses PIZZACOIN_OWNER_PRIVATE_KEY.
- * @param nonce - Optional explicit nonce to avoid "existing transaction had higher priority" errors when sending multiple txs.
+ * Send MON (native) to a player's wallet.
+ * @param amountWei - Amount in wei (e.g. contribution share of 1 MON pool)
  */
 export async function sendMon(
   to: Address,
+  amountWei: bigint,
   privateKeyHex: string,
   rpcUrl: string,
   chainId = 10143,
@@ -52,7 +52,7 @@ export async function sendMon(
     try {
       const hash = await walletClient.sendTransaction({
         to,
-        value: REWARD_AMOUNT_WEI,
+        value: amountWei < MIN_WEI ? MIN_WEI : amountWei,
         ...(nonce !== undefined && { nonce }),
       });
 

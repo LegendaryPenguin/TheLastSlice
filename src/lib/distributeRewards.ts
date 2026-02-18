@@ -14,9 +14,12 @@ export type PlayerWithReward = {
   tag?: string | null;
 };
 
+/** 1 MON in wei - total reward pool */
+const TOTAL_POOL_WEI = BigInt("1000000000000000000");
+
 /**
- * Distribute 0.1 MON (native) to each player when raid ends.
- * Uses PIZZACOIN_OWNER_PRIVATE_KEY to send from your account.
+ * Distribute 1 MON total to players based on damage contribution.
+ * Each player gets (their_damage / total_damage) * 1 MON.
  */
 export async function distributeRaidRewards(
   players: PlayerWithReward[]
@@ -33,7 +36,12 @@ export async function distributeRaidRewards(
     };
   }
 
-  // Get initial nonce and owner address to avoid "existing transaction had higher priority" and skip self-sends
+  const totalDamage = players.reduce((s, p) => s + (p.total_damage || 0), 0);
+  if (totalDamage <= 0) {
+    return { distributed: 0, skipped: players.length, errors: ["No damage dealt"] };
+  }
+
+  // Get initial nonce and owner address
   let nextNonce: number | undefined;
   let ownerAddress: string | null = null;
   try {
@@ -67,9 +75,13 @@ export async function distributeRaidRewards(
       continue;
     }
 
+    const damage = p.total_damage || 0;
+    const shareWei = (BigInt(Math.floor(damage * 1e12)) * TOTAL_POOL_WEI) / BigInt(Math.floor(totalDamage * 1e12));
+
     try {
       const hash = await sendMon(
         walletAddress as Address,
+        shareWei,
         OWNER_PRIVATE_KEY,
         RPC_URL,
         CHAIN_ID,

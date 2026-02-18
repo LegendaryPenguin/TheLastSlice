@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePrivy, useGuestAccounts } from "@privy-io/react-auth";
+import { formatUnits } from "viem";
 
 /** Shorten Privy user ID for display (e.g. "did:privy:abc123xyz" -> "abc123") */
 function shortUserId(id: string): string {
@@ -11,11 +12,41 @@ function shortUserId(id: string): string {
   return id.slice(-8) || id;
 }
 
+/** Get first EVM wallet address from Privy linked accounts */
+function getWalletAddress(user: { linkedAccounts?: Array<{ type?: string; address?: string }> }): string | null {
+  const accounts = user?.linkedAccounts ?? [];
+  const evm = accounts.find(
+    (a) => a?.address && /^0x[a-fA-F0-9]{40}$/.test(String(a.address))
+  );
+  return evm?.address ?? null;
+}
+
 export default function PrivyConnectButton() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { createGuestAccount } = useGuestAccounts();
   const [guestLoading, setGuestLoading] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const [monBalance, setMonBalance] = useState<string | null>(null);
+
+  const walletAddress = user ? getWalletAddress(user) : null;
+
+  useEffect(() => {
+    if (!walletAddress) {
+      setMonBalance(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/balance?address=${encodeURIComponent(walletAddress)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled || data.error) return;
+        const wei = BigInt(data.wei ?? "0");
+        const formatted = parseFloat(formatUnits(wei, 18)).toFixed(4);
+        setMonBalance(formatted);
+      })
+      .catch(() => setMonBalance(null));
+    return () => { cancelled = true; };
+  }, [walletAddress]);
 
   if (!ready) {
     return (
@@ -61,6 +92,22 @@ export default function PrivyConnectButton() {
           {user.isGuest ? "👤 " : "🔗 "}
           {label}
         </div>
+        {walletAddress && (
+          <div
+            style={{
+              padding: "8px 12px",
+              borderRadius: 12,
+              border: "1px solid rgba(139,92,246,0.4)",
+              background: "rgba(139,92,246,0.15)",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "rgba(255,255,255,0.95)",
+            }}
+            title="MON balance on Monad Testnet"
+          >
+            {monBalance !== null ? `${monBalance} MON` : "…"}
+          </div>
+        )}
         <button
           type="button"
           onClick={async () => {

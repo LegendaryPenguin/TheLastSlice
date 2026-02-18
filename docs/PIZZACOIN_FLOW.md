@@ -1,8 +1,8 @@
-# Raid Rewards (0.1 MON)
+# Raid Rewards (1 MON pool)
 
 ## Overview
 
-When a raid ends, each player receives **0.1 MON** (native token) sent from your account (`PIZZACOIN_OWNER_PRIVATE_KEY`) to their wallet.
+When a raid ends, **1 MON total** is distributed to players based on damage contribution. Each player receives `(their_damage / total_damage) * 1 MON` sent from your account (`PIZZACOIN_OWNER_PRIVATE_KEY`).
 
 ## Flow
 

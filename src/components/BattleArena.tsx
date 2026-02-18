@@ -12,34 +12,30 @@ function hpColor(pct: number) {
   return "#ef4444";
 }
 
-/** Hash attack id to 0–7 for position index */
-function positionIndex(id: string): number {
+/** Hash to deterministic but varied position — deviates from center for "many fighters" feel */
+function getPopupPosition(id: string, index: number) {
   let h = 0;
-  for (let i = 0; i < Math.min(id.length, 8); i++) h += id.charCodeAt(i);
-  return h % 8;
+  for (let i = 0; i < Math.min(id.length, 12); i++) h += id.charCodeAt(i);
+  const angle = ((h % 360) / 360) * Math.PI * 2 + (index * 0.7);
+  const radius = 28 + (h % 18);
+  const dx = Math.cos(angle) * radius;
+  const dy = Math.sin(angle) * radius;
+  return {
+    left: `calc(50% + ${dx}%)`,
+    top: `calc(45% + ${dy}%)`,
+    transform: "translate(-50%, -50%)",
+  };
 }
 
-const POPUP_POSITIONS = [
-  { top: "15%", left: "15%" },
-  { top: "8%", left: "50%", transform: "translateX(-50%)" },
-  { top: "15%", right: "15%", left: "auto" },
-  { top: "50%", right: "8%", left: "auto", transform: "translateY(-50%)" },
-  { bottom: "15%", right: "15%", left: "auto" },
-  { bottom: "8%", left: "50%", transform: "translateX(-50%)" },
-  { bottom: "15%", left: "15%" },
-  { top: "50%", left: "8%", transform: "translateY(-50%)" },
-];
-
-function AttackPopup({ attack }: { attack: any }) {
-  const idx = positionIndex(String(attack.id));
-  const pos = POPUP_POSITIONS[idx];
+function AttackPopup({ attack, index }: { attack: any; index: number }) {
+  const pos = getPopupPosition(String(attack.id), index);
   return (
     <motion.div
       className="atkPopup"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.25 }}
+      initial={{ opacity: 0, scale: 0.6, y: 8 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.85, y: -4 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       style={{ ...pos }}
     >
       <div className="atkPopupLine">{attack.player_name}</div>
@@ -81,11 +77,11 @@ export default function BattleArena({
     setLocalEnergy(player?.energy ?? 100);
   }, [player?.energy]);
 
-  // Smooth regen animation (client-only UI)
+  // Smooth regen animation (client-only UI) — ~10/sec (0->100 in 10s)
   useEffect(() => {
     const id = setInterval(() => {
-      setLocalEnergy((e) => clamp(e + 2, 0, 100));
-    }, 80);
+      setLocalEnergy((e) => clamp(e + 1, 0, 100));
+    }, 100);
     return () => clearInterval(id);
   }, []);
 
@@ -93,8 +89,6 @@ export default function BattleArena({
     if (!raid) return 1;
     return clamp(raid.boss_hp / raid.boss_hp_max, 0, 1);
   }, [raid]);
-
-  const latestAttack = attacks?.[0] ?? null;
 
   // Live timer tick (updates every second)
   const [nowTick, setNowTick] = useState(0);
@@ -113,7 +107,7 @@ export default function BattleArena({
     return Math.max(0, Math.floor(ms / 1000));
   }, [raid?.ends_at, raid?.started_at, nowTick]);
 
-  // Deduplicate attacks
+  // Deduplicate attacks (used for feed + popups)
   const attacksDeduped = useMemo(() => {
     const seen = new Set<string>();
     const out: any[] = [];
@@ -125,6 +119,25 @@ export default function BattleArena({
     }
     return out;
   }, [attacks]);
+
+  const latestAttack = attacksDeduped?.[0] ?? null;
+
+  // Show only latest attack, auto-dismiss after 3 seconds
+  const [visibleAttack, setVisibleAttack] = useState<typeof latestAttack>(null);
+  const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!latestAttack?.id) return;
+    setVisibleAttack(latestAttack);
+    if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    dismissTimerRef.current = setTimeout(() => {
+      dismissTimerRef.current = null;
+      setVisibleAttack(null);
+    }, 3000);
+    return () => {
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+    };
+  }, [latestAttack?.id]);
 
   // Boss reaction animation
   const lastAttackId = useRef<string | null>(null);
@@ -306,25 +319,25 @@ export default function BattleArena({
               <div className="bossNameplate">PIZZA TITAN</div>
             </motion.div>
 
-            {/* ATTACK FX — visual effects on sprite only */}
+            {/* ATTACK FX — single effect, disappears with popup */}
             <AnimatePresence>
-              {latestAttack && (
+              {visibleAttack && (
                 <motion.div
-                  key={`fx-${latestAttack.id}`}
-                  className={`atkFx atk-${latestAttack.anim_type}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  key={`fx-${visibleAttack.id}`}
+                  className={`atkFx atk-${visibleAttack.anim_type}`}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.05 }}
-                  transition={{ duration: 0.35 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
                 />
               )}
             </AnimatePresence>
 
-            {/* Attack popups — multiline oval, random positions around sprite, smaller */}
+            {/* Attack popup — shows for 3s then fades out */}
             <AnimatePresence>
-            {latestAttack && (
-              <AttackPopup key={`label-${latestAttack.id}`} attack={latestAttack} />
-            )}
+              {visibleAttack && (
+                <AttackPopup key={`label-${visibleAttack.id}`} attack={visibleAttack} index={0} />
+              )}
             </AnimatePresence>
           </div>
 
@@ -359,7 +372,7 @@ export default function BattleArena({
               {moves.map((m) => (
                 <button
                   key={m.id}
-                  className="moveBtn"
+                  className={`moveBtn moveBtn-${m.animType}`}
                   onClick={() => doMove(m)}
                   disabled={!player || localEnergy < m.cost || raid?.status !== "live" || attackLoading}
                   title={`Cost ${m.cost} | Dmg ${m.minDmg}-${m.maxDmg}`}
